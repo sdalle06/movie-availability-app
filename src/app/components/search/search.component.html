@@ -1,11 +1,11 @@
 <div class="search-container">
   <div class="search-wrapper">
     <mat-form-field appearance="outline" class="search-field">
-      <mat-label>Find movies across streaming platforms</mat-label>
+      <mat-label>Find movies</mat-label>
       <input 
         matInput 
         [formControl]="searchControl" 
-        placeholder="Enter movie title (e.g., Inception, Avengers)" 
+        placeholder="Enter movie title" 
         (keyup.enter)="onSearch()"
         autocomplete="off"
       >

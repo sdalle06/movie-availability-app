@@ -30,6 +30,31 @@
   ::ng-deep .mat-mdc-text-field-wrapper {
     background-color: transparent !important;
   }
+  
+  // Fix for mobile text overlap
+  ::ng-deep .mat-mdc-form-field-infix {
+    width: 100%;
+    min-width: 0;
+  }
+  
+  ::ng-deep input.mat-mdc-input-element {
+    text-overflow: ellipsis;
+  }
+  
+  @media (max-width: 600px) {
+    ::ng-deep .mat-mdc-form-field-infix {
+      width: 100%;
+      padding: 12px 0;
+    }
+    
+    ::ng-deep .mat-mdc-form-field-label {
+      font-size: 14px;
+    }
+    
+    ::ng-deep input.mat-mdc-input-element {
+      font-size: 14px;
+    }
+  }
 }
 
 .search-icon {
@@ -62,6 +87,9 @@
   @media (max-width: 600px) {
     width: 100%;
     justify-content: center;
+    height: 48px;
+    font-size: 14px;
+    padding: 0 16px;
     margin-top: 0;
   }
 }
