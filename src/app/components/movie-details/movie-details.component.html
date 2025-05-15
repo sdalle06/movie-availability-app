@@ -1,0 +1,135 @@
+<div class="container" *ngIf="!loading && movie">
+  <!-- Back button -->
+  <button mat-button color="primary" (click)="goBack()" class="back-button">
+    <mat-icon>arrow_back</mat-icon> Back to Search
+  </button>
+  
+  <!-- Movie backdrop -->
+  <div *ngIf="movie.backdrop_path" class="backdrop-container">
+    <div class="backdrop" [style.background-image]="'url(' + getFullBackdropPath(movie.backdrop_path) + ')'">
+      <div class="backdrop-overlay">
+        <div class="movie-title-container">
+          <h1 class="movie-title">{{ movie.title }}</h1>
+          <p *ngIf="movie.tagline" class="movie-tagline">{{ movie.tagline }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Movie details -->
+  <div class="movie-details-grid">
+    <!-- Left column: Poster and basic info -->
+    <div class="poster-column">
+      <mat-card>
+        <img 
+          [src]="getFullPosterPath(movie.poster_path)" 
+          [alt]="movie.title" 
+          class="movie-poster">
+        
+        <mat-card-content>
+          <div class="info-item">
+            <mat-icon class="info-icon star-icon">star</mat-icon>
+            <span class="info-text">{{ movie.vote_average?.toFixed(1) }} / 10</span>
+            <span class="info-subtext">({{ movie.vote_count }} votes)</span>
+          </div>
+          
+          <div class="info-item">
+            <mat-icon class="info-icon">calendar_today</mat-icon>
+            <span class="info-text">{{ getYear(movie.release_date) }}</span>
+          </div>
+          
+          <div *ngIf="movie.runtime" class="info-item">
+            <mat-icon class="info-icon">access_time</mat-icon>
+            <span class="info-text">{{ formatRuntime(movie.runtime) }}</span>
+          </div>
+          
+          <mat-divider class="divider"></mat-divider>
+          
+          <div *ngIf="movie.genres && movie.genres.length > 0" class="genres-container">
+            <h3 class="section-title">Genres</h3>
+            <div class="genres">
+              <mat-chip-set>
+                <mat-chip *ngFor="let genre of movie.genres">
+                  {{ genre.name }}
+                </mat-chip>
+              </mat-chip-set>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    
+    <!-- Right column: Overview and availability -->
+    <div class="details-column">
+      <!-- Overview -->
+      <mat-card class="overview-card">
+        <mat-card-header>
+          <mat-card-title>Overview</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p class="overview-text">{{ movie.overview || 'No overview available.' }}</p>
+        </mat-card-content>
+      </mat-card>
+      
+      <!-- Availability -->
+      <mat-card class="availability-card">
+        <mat-card-header>
+          <mat-card-title>Availability on Your Platforms</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <!-- No platforms selected -->
+          <div *ngIf="selectedPlatforms.length === 0" class="message-container">
+            <p class="message">Please select your streaming platforms on the search page to see availability.</p>
+          </div>
+          
+          <!-- No availability -->
+          <div *ngIf="selectedPlatforms.length > 0 && availablePlatforms.length === 0" class="message-container">
+            <p class="message">This movie is not available on any of your selected platforms in any country.</p>
+          </div>
+          
+          <!-- Show availability by platform -->
+          <div *ngIf="availablePlatforms.length > 0" class="platforms-container">
+            <h3 class="section-title">Available on these platforms:</h3>
+            
+            <mat-list>
+              <mat-list-item *ngFor="let platform of availablePlatforms" class="platform-item">
+                <div class="platform-info">
+                  <img 
+                    [src]="'https://image.tmdb.org/t/p/original' + platform.logoPath" 
+                    [alt]="platform.platformName"
+                    class="platform-logo">
+                  <span class="platform-name">{{ platform.platformName }}</span>
+                </div>
+                
+                <div class="countries-list">
+                  <h4 class="countries-title">Available in {{ platform.countries.length }} {{ platform.countries.length === 1 ? 'country' : 'countries' }}:</h4>
+                  <div class="country-chips">
+                    <mat-chip-set>
+                      <mat-chip *ngFor="let country of platform.countries" class="country-chip">
+                        <span class="country-flag">{{ getFlagEmoji(country.countryCode) }}</span>
+                        {{ country.countryName }}
+                      </mat-chip>
+                    </mat-chip-set>
+                  </div>
+                </div>
+              </mat-list-item>
+            </mat-list>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
+
+<!-- Loading spinner -->
+<div *ngIf="loading" class="loading-container">
+  <mat-spinner></mat-spinner>
+</div>
+
+<!-- Error message -->
+<div *ngIf="error" class="error-container">
+  <p class="error-message">{{ error }}</p>
+  <button mat-button color="primary" (click)="goBack()">
+    <mat-icon>arrow_back</mat-icon> Back to Search
+  </button>
+</div>

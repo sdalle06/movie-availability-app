@@ -1,0 +1,34 @@
+<header class="app-header">
+  <mat-toolbar>
+    <div class="toolbar-content">
+      <div class="logo-container" routerLink="/">
+        <div class="logo-wrapper">
+          <mat-icon class="logo-icon">movie_filter</mat-icon>
+        </div>
+        <div class="title-container">
+          <h1 class="title">{{ title }}</h1>
+          <span class="subtitle">Find movies across streaming platforms</span>
+        </div>
+      </div>
+      
+      <div class="nav-links">
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">
+          <mat-icon>home</mat-icon>
+          <span>Home</span>
+        </a>
+        <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer" class="nav-link">
+          <mat-icon>movie</mat-icon>
+          <span>TMDB</span>
+        </a>
+        <a href="https://www.justwatch.com/" target="_blank" rel="noopener noreferrer" class="nav-link">
+          <mat-icon>live_tv</mat-icon>
+          <span>JustWatch</span>
+        </a>
+      </div>
+      
+      <button mat-icon-button class="menu-button" aria-label="Toggle navigation menu">
+        <mat-icon>menu</mat-icon>
+      </button>
+    </div>
+  </mat-toolbar>
+</header>

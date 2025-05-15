@@ -1,0 +1,47 @@
+<mat-card class="movie-card" [routerLink]="['/movies', movie.id]">
+  <div class="poster-container">
+    <img 
+      mat-card-image 
+      [src]="getFullPosterPath(movie.poster_path)" 
+      [alt]="movie.title" 
+      class="movie-poster"
+      [ngClass]="{'placeholder-poster': !movie.poster_path}"
+      loading="lazy"
+    >
+    <div class="poster-overlay">
+      <div class="overlay-content">
+        <div class="movie-rating" *ngIf="movie.vote_average">
+          <div class="rating-circle">
+            <span>{{ movie.vote_average.toFixed(1) }}</span>
+          </div>
+        </div>
+        
+        <button mat-raised-button color="accent" class="view-details-btn">
+          <mat-icon>visibility</mat-icon>
+          <span>View Details</span>
+        </button>
+      </div>
+    </div>
+    
+    <div class="rating-badge" *ngIf="movie.vote_average">
+      <span [ngClass]="{'high-rating': movie.vote_average >= 7, 'medium-rating': movie.vote_average >= 5 && movie.vote_average < 7, 'low-rating': movie.vote_average < 5}">{{ movie.vote_average.toFixed(1) }}</span>
+    </div>
+  </div>
+  
+  <mat-card-content>
+    <h3 class="movie-title" [title]="movie.title">{{ movie.title }}</h3>
+    <div class="movie-info">
+      <div class="info-row">
+        <span class="year">
+          <mat-icon class="info-icon">date_range</mat-icon>
+          {{ getYear(movie.release_date) }}
+        </span>
+        
+        <span class="genre" *ngIf="movie.genre_ids?.length">
+          <mat-icon class="info-icon">category</mat-icon>
+          {{ getGenreName(movie.genre_ids[0]) }}
+        </span>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>

@@ -1,0 +1,37 @@
+<div class="search-container">
+  <div class="search-wrapper">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Find movies across streaming platforms</mat-label>
+      <input 
+        matInput 
+        [formControl]="searchControl" 
+        placeholder="Enter movie title (e.g., Inception, Avengers)" 
+        (keyup.enter)="onSearch()"
+        autocomplete="off"
+      >
+      <mat-icon matPrefix class="search-icon">search</mat-icon>
+      <button 
+        *ngIf="searchControl.value" 
+        matSuffix 
+        mat-icon-button 
+        aria-label="Clear" 
+        (click)="clearSearch($event)"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+    
+    <button 
+      mat-raised-button 
+      color="accent" 
+      class="search-button" 
+      (click)="onSearch()"
+      [disabled]="!searchControl.value"
+    >
+      <mat-icon>movie_filter</mat-icon>
+      <span>Find Movies</span>
+    </button>
+  </div>
+  
+  <!-- Search hint removed as requested -->
+</div>

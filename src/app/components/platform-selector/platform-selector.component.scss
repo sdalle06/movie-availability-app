@@ -1,0 +1,312 @@
+:host {
+  display: block;
+  width: 100%;
+  padding: 0;
+}
+
+.platform-header {
+  margin-bottom: 16px;
+  background-color: rgba(30, 30, 30, 0.7);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  
+  .platforms-title {
+    display: flex;
+    align-items: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    
+    .header-icon {
+      background-color: var(--primary-color);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+      
+      mat-icon {
+        font-size: 18px;
+        color: white;
+      }
+    }
+  }
+  
+  .platforms-subtitle {
+    margin: 0;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-left: 42px;
+  }
+}
+
+.show-all-toggle {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 4px;
+  padding: 4px 0;
+  
+  .provider-count {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    margin-right: 12px;
+    display: flex;
+    align-items: center;
+  }
+  
+  mat-checkbox {
+    ::ng-deep .mdc-form-field label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    ::ng-deep .mdc-checkbox {
+      .mdc-checkbox__background {
+        border-color: white !important;
+      }
+      
+      &.mdc-checkbox--selected .mdc-checkbox__background {
+        background-color: white !important;
+        border-color: white !important;
+      }
+      
+      .mdc-checkbox__checkmark {
+        color: var(--primary-color) !important;
+      }
+    }
+  }
+  
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: 12px;
+    
+    .provider-count {
+      margin-bottom: 8px;
+      margin-right: 0;
+      justify-content: flex-end;
+    }
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+  
+  .loading-text {
+    margin-top: 16px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+  }
+}
+
+.error-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #f44336;
+  text-align: center;
+  padding: 30px 20px;
+  
+  .error-icon {
+    font-size: 36px;
+    margin-bottom: 16px;
+  }
+  
+  p {
+    margin-bottom: 16px;
+  }
+}
+
+.selected-count {
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  
+  .checkmark-icon {
+    color: var(--accent-color);
+    margin-right: 8px;
+    font-size: 18px;
+  }
+}
+
+.platforms-grid {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  gap: 12px;
+  margin: 8px 0;
+  padding: 4px;
+  
+  /* Hide scrollbar but keep functionality */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+  }
+}
+
+.platform-item {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  width: 80px;
+}
+
+.platform-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 5px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 100%;
+  box-sizing: border-box;
+  opacity: 0.5; /* Grey out unselected platforms */
+  filter: grayscale(70%); /* Apply grayscale filter to unselected platforms */
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+    opacity: 0.8; /* Increase opacity on hover */
+    filter: grayscale(30%); /* Reduce grayscale on hover */
+  }
+  
+  &.selected {
+    background-color: rgba(var(--primary-color-rgb), 0.3);
+    border: 1px solid var(--primary-color);
+    opacity: 1; /* Full opacity for selected platforms */
+    filter: grayscale(0%); /* No grayscale for selected platforms */
+  }
+}
+
+.platform-logo-container {
+  position: relative;
+  margin-bottom: 8px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.platform-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  object-fit: cover;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.selection-indicator {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: var(--accent-color);
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  mat-icon {
+    font-size: 12px;
+    height: 12px;
+    width: 12px;
+    color: white;
+  }
+}
+
+.platform-name {
+  font-size: 11px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: 2px;
+}
+
+.platform-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 8px;
+  padding: 8px 0;
+  
+  .selected-count {
+    margin-right: 12px;
+  }
+  
+  button {
+    min-width: 90px;
+    height: 36px;
+    padding: 0 12px;
+    background-color: white !important;
+    color: rgba(0, 0, 0, 0.87) !important;
+    border: none !important;
+    font-weight: 500;
+    font-size: 13px;
+    
+    &:hover:not([disabled]) {
+      background-color: #f5f5f5 !important;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      background-color: rgba(255, 255, 255, 0.7) !important;
+      color: rgba(0, 0, 0, 0.38) !important;
+    }
+    
+    mat-icon {
+      margin-right: 4px;
+      font-size: 16px;
+      height: 16px;
+      width: 16px;
+    }
+  }
+  
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: 12px;
+    
+    .selected-count {
+      margin-bottom: 8px;
+      justify-content: center;
+    }
+    
+    button {
+      width: 100%;
+    }
+  }
+}
+
+.search-hint {
+  margin-top: 16px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+}

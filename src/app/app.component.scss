@@ -1,0 +1,104 @@
+:root {
+  --primary-color: #3f51b5;
+  --primary-color-rgb: 63, 81, 181;
+  --primary-color-light: #757de8;
+  --primary-color-dark: #002984;
+  --accent-color: #ff4081;
+  --accent-color-rgb: 255, 64, 129;
+  --accent-color-light: #ff79b0;
+  --accent-color-dark: #c60055;
+  --background-color: #121212;
+  --background-card: #1e1e1e;
+  --text-primary: rgba(255, 255, 255, 0.9);
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-light: rgba(255, 255, 255, 0.5);
+  --border-radius: 12px;
+  --header-height: 64px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Roboto', 'Segoe UI', sans-serif;
+  color: var(--text-primary);
+  background-color: var(--background-color);
+  line-height: 1.5;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--background-color);
+  background-image: linear-gradient(to bottom, rgba(20, 20, 30, 0.8), rgba(10, 10, 15, 0.9)),
+    url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
+  background-attachment: fixed;
+}
+
+.content-container {
+  flex: 1;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color-light);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+}
+
+/* Material overrides */
+.mat-mdc-card {
+  --mdc-elevated-card-container-color: var(--background-card);
+  color: var(--text-primary);
+}
+
+.mat-mdc-raised-button.mat-accent {
+  --mdc-protected-button-container-color: var(--accent-color);
+}
+
+.mat-mdc-raised-button.mat-primary {
+  --mdc-protected-button-container-color: var(--primary-color);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.slide-up {
+  animation: slideUp 0.5s ease-out;
+}

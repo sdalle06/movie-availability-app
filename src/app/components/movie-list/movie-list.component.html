@@ -1,0 +1,64 @@
+<div class="page-container fade-in">
+  <div class="main-content">
+    <div class="search-section">
+      <div class="search-container">
+        <app-search (search)="onSearch($event)"></app-search>
+      </div>
+    </div>
+    
+    <div class="platforms-section">
+      <app-platform-selector 
+        (platformsChange)="onPlatformsChange($event)" 
+        [selectedPlatforms]="selectedPlatforms">
+      </app-platform-selector>
+    </div>
+    
+    <div *ngIf="loading" class="loading-container slide-up">
+      <mat-spinner diameter="60" color="accent"></mat-spinner>
+      <p class="loading-text">Searching for movies...</p>
+    </div>
+    
+    <div *ngIf="!loading && movies.length > 0" class="results-section slide-up">
+      <div class="results-header">
+        <div class="results-info">
+          <h2 class="section-title">Search Results</h2>
+          <p class="results-count">Found <span class="count-highlight">{{ movies.length }}</span> movies</p>
+        </div>
+        
+        <div class="results-actions">
+          <button mat-stroked-button color="primary" class="sort-button">
+            <mat-icon>sort</mat-icon>
+            Sort by: Rating
+          </button>
+        </div>
+      </div>
+      
+      <div class="movies-grid">
+        <app-movie-card 
+          *ngFor="let movie of movies" 
+          [movie]="movie">
+        </app-movie-card>
+      </div>
+    </div>
+    
+    <div *ngIf="!loading && searchPerformed && movies.length === 0" class="empty-state slide-up">
+      <div class="empty-state-content">
+        <mat-icon class="empty-icon">search_off</mat-icon>
+        <h3 class="empty-title">No Movies Found</h3>
+        <p class="empty-text">We couldn't find any movies matching your search criteria</p>
+        <button mat-raised-button color="accent" (click)="resetSearch()">
+          <mat-icon>refresh</mat-icon>
+          Try Another Search
+        </button>
+      </div>
+    </div>
+    
+    <div *ngIf="!loading && !searchPerformed && movies.length === 0" class="empty-state slide-up">
+      <div class="empty-state-content">
+        <mat-icon class="empty-icon">movie_filter</mat-icon>
+        <h3 class="empty-title">Ready to Discover Movies</h3>
+        <p class="empty-text">Search for a movie title above to see results</p>
+      </div>
+    </div>
+  </div>
+</div>

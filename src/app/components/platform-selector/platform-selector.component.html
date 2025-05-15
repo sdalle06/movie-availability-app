@@ -1,0 +1,62 @@
+<!-- Platform header removed as requested -->
+
+<div *ngIf="loading" class="loading-container">
+  <mat-spinner diameter="40" color="accent"></mat-spinner>
+  <p class="loading-text">Loading streaming platforms...</p>
+</div>
+
+<div *ngIf="error" class="error-message">
+  <mat-icon class="error-icon">error_outline</mat-icon>
+  <p>{{ error }}</p>
+  <button mat-button color="accent" (click)="loadProviders()">Try Again</button>
+</div>
+
+<div *ngIf="!loading && !error">
+  <div class="platforms-grid">
+    <div *ngFor="let provider of providers" class="platform-item">
+      <mat-card 
+        class="platform-card" 
+        [class.selected]="isPlatformSelected(provider.provider_id)"
+        (click)="togglePlatform(provider.provider_id)"
+      >
+        <div class="platform-logo-container">
+          <img 
+            [src]="'https://image.tmdb.org/t/p/original' + provider.logo_path" 
+            [alt]="provider.provider_name"
+            class="platform-logo">
+          <div class="selection-indicator">
+            <mat-icon *ngIf="isPlatformSelected(provider.provider_id)">check_circle</mat-icon>
+          </div>
+        </div>
+        <div class="platform-name">{{ provider.provider_name }}</div>
+      </mat-card>
+    </div>
+  </div>
+  
+  <div class="platform-actions" *ngIf="providers.length > 0">
+    <div class="selected-count" *ngIf="selectedPlatforms.length > 0">
+      <mat-icon class="checkmark-icon">check_circle</mat-icon>
+      <span>{{ selectedPlatforms.length }} platform{{ selectedPlatforms.length === 1 ? '' : 's' }} selected</span>
+    </div>
+    <button 
+      mat-stroked-button 
+      color="primary" 
+      class="clear-button" 
+      (click)="clearAll()" 
+      [disabled]="selectedPlatforms.length === 0"
+    >
+      <mat-icon>clear_all</mat-icon>
+      Clear
+    </button>
+  </div>
+  
+  <div class="show-all-toggle">
+    <mat-checkbox 
+      [checked]="showAllProviders" 
+      (change)="toggleShowAllProviders()"
+      color="primary"
+    >
+      Show all streaming services
+    </mat-checkbox>
+  </div>
+</div>

@@ -1,0 +1,25 @@
+.country-selector-container {
+  max-width: 300px;
+  margin: 20px auto;
+  padding: 0 16px;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.error-message {
+  color: #f44336;
+  text-align: center;
+  padding: 10px;
+}
+
+.selector-wrapper {
+  width: 100%;
+}
+
+mat-form-field {
+  width: 100%;
+}
