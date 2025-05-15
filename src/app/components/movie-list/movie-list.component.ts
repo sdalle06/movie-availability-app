@@ -49,22 +49,26 @@ export class MovieListComponent implements OnInit {
     this.searchPerformed = true;
     this.lastSearchQuery = query;
     
-    // Clear previous results immediately to ensure proper DOM updates
-    this.movies = [];
-    
     this.movieService.searchMovies(query).subscribe({
       next: (response) => {
-        // Small timeout to ensure DOM is updated properly before scrolling
-        setTimeout(() => {
-          this.movies = response.results;
-          this.loading = false;
-          
-          if (this.movies.length === 0) {
-            this.snackBar.open('No movies found. Try a different search term.', 'Close', {
-              duration: 3000
-            });
-          }
-        }, 100);
+        this.movies = response.results;
+        this.loading = false;
+        
+        // If results are available, scroll to them with a small delay
+        if (this.movies.length > 0) {
+          setTimeout(() => {
+            const moviesSection = document.getElementById('movies-section');
+            if (moviesSection) {
+              moviesSection.scrollIntoView({ behavior: 'smooth' });
+            }
+          }, 200);
+        }
+        
+        if (this.movies.length === 0) {
+          this.snackBar.open('No movies found. Try a different search term.', 'Close', {
+            duration: 3000
+          });
+        }
       },
       error: (error) => {
         console.error('Error searching movies:', error);
