@@ -13,12 +13,12 @@
       </app-platform-selector>
     </div>
     
-    <div *ngIf="loading" class="loading-container slide-up">
+    <div id="loading-section" *ngIf="loading" class="loading-container slide-up">
       <mat-spinner diameter="60" color="accent"></mat-spinner>
       <p class="loading-text">Searching for movies...</p>
     </div>
     
-    <div *ngIf="!loading && movies.length > 0" class="results-section slide-up">
+    <div id="movies-section" *ngIf="!loading && movies.length > 0" class="results-section slide-up">
       <div class="results-header">
         <div class="results-info">
           <h2 class="section-title">Search Results</h2>

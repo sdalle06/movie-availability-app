@@ -28,6 +28,22 @@ export class SearchComponent {
     const query = this.searchControl.value?.trim();
     if (query) {
       this.search.emit(query);
+      
+      // Immediately scroll to the loading section
+      setTimeout(() => {
+        const loadingSection = document.getElementById('loading-section');
+        if (loadingSection) {
+          loadingSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+      
+      // After a delay, try to scroll to the results section if it exists
+      setTimeout(() => {
+        const moviesSection = document.getElementById('movies-section');
+        if (moviesSection) {
+          moviesSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 1000); // Longer delay to allow for API response and rendering
     }
   }
   
