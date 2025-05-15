@@ -67,10 +67,24 @@
   margin-bottom: 40px;
 }
 
+.results-header {
+  margin-bottom: 16px;
+}
+
+.results-info {
+  display: flex;
+  flex-direction: column;
+}
+
 .results-count {
   color: var(--text-secondary);
   margin-bottom: 20px;
   font-size: 0.95rem;
+}
+
+.count-highlight {
+  color: var(--accent-color);
+  font-weight: 600;
 }
 
 .movies-grid {
@@ -142,8 +156,12 @@
 }
 
 @media (max-width: 480px) {
+  .main-content {
+    padding: 0 12px 40px;
+  }
+  
   .hero-section {
-    padding: 60px 16px;
+    padding: 40px 16px;
   }
   
   .hero-title {
@@ -151,11 +169,36 @@
   }
   
   .platforms-section {
-    padding: 20px;
+    padding: 16px 0;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
   
   .movies-grid {
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     gap: 12px;
+  }
+  
+  .empty-state {
+    margin: 40px 0;
+  }
+  
+  .empty-icon {
+    font-size: 48px;
+    height: 48px;
+    width: 48px;
+  }
+  
+  .empty-title {
+    font-size: 1.25rem;
+  }
+  
+  .empty-text {
+    font-size: 0.9rem;
+  }
+  
+  .section-title {
+    font-size: 1.25rem;
   }
 }

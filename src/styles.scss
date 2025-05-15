@@ -9,11 +9,31 @@
   box-sizing: border-box;
 }
 
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  
+  @media (max-width: 768px) {
+    font-size: 15px;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 14px;
+  }
+}
+
 body {
   font-family: 'Poppins', sans-serif;
   background-color: #f8f9fa;
   color: #333;
   line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  overflow-x: hidden;
+  /* Improve scrolling performance */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
 /* Custom variables */
@@ -34,6 +54,14 @@ body {
   --spacing-md: 16px;
   --spacing-lg: 24px;
   --spacing-xl: 32px;
+  
+  /* Mobile-specific variables */
+  @media (max-width: 480px) {
+    --spacing-md: 12px;
+    --spacing-lg: 20px;
+    --spacing-xl: 28px;
+    --border-radius: 6px;
+  }
 }
 
 /* Material theme customization */
@@ -47,6 +75,14 @@ body {
 .mat-mdc-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Disable hover effects on touch devices for better performance */
+@media (hover: none) {
+  .mat-mdc-card:hover {
+    transform: none;
+    box-shadow: var(--shadow) !important;
+  }
 }
 
 .mat-mdc-button.mat-primary {
@@ -64,6 +100,10 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--spacing-md);
+  
+  @media (max-width: 480px) {
+    padding: var(--spacing-sm);
+  }
 }
 
 .text-center {
@@ -106,6 +146,29 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary-color);
+}
+
+/* Make inputs and buttons more touch-friendly on mobile */
+@media (max-width: 768px) {
+  button, 
+  [role="button"],
+  .mat-mdc-button,
+  .mat-mdc-raised-button,
+  .mat-mdc-icon-button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  input, 
+  select, 
+  textarea {
+    font-size: 16px !important; /* Prevents iOS zoom on focus */
+  }
+}
+
+/* Improve mobile scrolling */
+* {
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Angular Material theme overrides */

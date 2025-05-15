@@ -11,6 +11,12 @@
   padding: 20px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   
+  @media (max-width: 480px) {
+    padding: 16px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+  }
+  
   .platforms-title {
     display: flex;
     align-items: center;
@@ -18,6 +24,10 @@
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 8px;
+    
+    @media (max-width: 480px) {
+      font-size: 1rem;
+    }
     
     .header-icon {
       background-color: var(--primary-color);
@@ -29,9 +39,18 @@
       justify-content: center;
       margin-right: 10px;
       
+      @media (max-width: 480px) {
+        width: 28px;
+        height: 28px;
+      }
+      
       mat-icon {
         font-size: 18px;
         color: white;
+        
+        @media (max-width: 480px) {
+          font-size: 16px;
+        }
       }
     }
   }
@@ -41,6 +60,11 @@
     font-size: 14px;
     color: rgba(255, 255, 255, 0.7);
     margin-left: 42px;
+    
+    @media (max-width: 480px) {
+      font-size: 12px;
+      margin-left: 38px;
+    }
   }
 }
 
@@ -100,10 +124,19 @@
   justify-content: center;
   padding: 40px 0;
   
+  @media (max-width: 480px) {
+    padding: 30px 0;
+  }
+  
   .loading-text {
     margin-top: 16px;
     color: rgba(255, 255, 255, 0.7);
     font-size: 14px;
+    
+    @media (max-width: 480px) {
+      font-size: 13px;
+      margin-top: 12px;
+    }
   }
 }
 
@@ -115,13 +148,27 @@
   text-align: center;
   padding: 30px 20px;
   
+  @media (max-width: 480px) {
+    padding: 20px 16px;
+  }
+  
   .error-icon {
     font-size: 36px;
     margin-bottom: 16px;
+    
+    @media (max-width: 480px) {
+      font-size: 30px;
+      margin-bottom: 12px;
+    }
   }
   
   p {
     margin-bottom: 16px;
+    
+    @media (max-width: 480px) {
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
   }
 }
 
@@ -131,10 +178,19 @@
   color: rgba(255, 255, 255, 0.9);
   font-size: 14px;
   
+  @media (max-width: 480px) {
+    font-size: 13px;
+  }
+  
   .checkmark-icon {
     color: var(--accent-color);
     margin-right: 8px;
     font-size: 18px;
+    
+    @media (max-width: 480px) {
+      font-size: 16px;
+      margin-right: 6px;
+    }
   }
 }
 
@@ -145,6 +201,13 @@
   gap: 12px;
   margin: 8px 0;
   padding: 4px;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  
+  @media (max-width: 480px) {
+    gap: 8px;
+    margin: 6px 0;
+    padding-bottom: 8px; /* Extra padding for scrolling on mobile */
+  }
   
   /* Hide scrollbar but keep functionality */
   scrollbar-width: thin;
@@ -169,6 +232,14 @@
   flex-direction: column;
   flex: 0 0 auto;
   width: 80px;
+  
+  @media (max-width: 480px) {
+    width: 70px;
+  }
+  
+  @media (max-width: 360px) {
+    width: 65px;
+  }
 }
 
 .platform-card {
@@ -184,6 +255,11 @@
   box-sizing: border-box;
   opacity: 0.5; /* Grey out unselected platforms */
   filter: grayscale(70%); /* Apply grayscale filter to unselected platforms */
+  
+  @media (max-width: 480px) {
+    padding: 8px 4px;
+    border-radius: 6px;
+  }
   
   &:hover {
     background-color: rgba(255, 255, 255, 0.15);
@@ -202,51 +278,77 @@
 
 .platform-logo-container {
   position: relative;
+  width: 50px;
+  height: 50px;
   margin-bottom: 8px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  
+  @media (max-width: 480px) {
+    width: 45px;
+    height: 45px;
+    margin-bottom: 6px;
+  }
+  
+  @media (max-width: 360px) {
+    width: 40px;
+    height: 40px;
+  }
 }
 
 .platform-logo {
-  width: 36px;
-  height: 36px;
-  border-radius: 6px;
-  object-fit: cover;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
 }
 
 .selection-indicator {
   position: absolute;
   top: -5px;
   right: -5px;
-  background-color: var(--accent-color);
+  background-color: var(--primary-color);
   border-radius: 50%;
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   
+  @media (max-width: 480px) {
+    width: 18px;
+    height: 18px;
+    top: -4px;
+    right: -4px;
+  }
+  
   mat-icon {
-    font-size: 12px;
-    height: 12px;
-    width: 12px;
+    font-size: 16px;
+    height: 16px;
+    width: 16px;
     color: white;
+    
+    @media (max-width: 480px) {
+      font-size: 14px;
+      height: 14px;
+      width: 14px;
+    }
   }
 }
 
 .platform-name {
-  font-size: 11px;
+  font-size: 12px;
   text-align: center;
-  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.2;
+  max-height: 2.4em;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100%;
-  color: rgba(255, 255, 255, 0.9);
-  margin-top: 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  
+  @media (max-width: 480px) {
+    font-size: 11px;
+  }
 }
 
 .platform-actions {
@@ -302,6 +404,10 @@
       width: 100%;
     }
   }
+}
+
+.clear-button {
+  /* Original styles will be applied from the button styles above */
 }
 
 .search-hint {

@@ -29,21 +29,79 @@ export class SearchComponent {
     if (query) {
       this.search.emit(query);
       
-      // Immediately scroll to the loading section
+      // Use a single smooth scroll with a small delay to allow for the loading state to appear
       setTimeout(() => {
+        // First try to scroll to the loading section
         const loadingSection = document.getElementById('loading-section');
         if (loadingSection) {
-          loadingSection.scrollIntoView({ behavior: 'smooth' });
+          // Use a smoother scroll with better easing
+          this.smoothScroll(loadingSection);
         }
-      }, 100);
+      }, 50);
+    }
+  }
+  
+  // Custom smooth scroll function with better easing
+  private smoothScroll(element: HTMLElement): void {
+    const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+    const startPosition = window.scrollY;
+    const distance = elementPosition - startPosition;
+    const duration = 600; // ms
+    let startTime: number | null = null;
+    
+    // Easing function for smoother animation
+    const easeInOutQuad = (t: number): number => {
+      return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    };
+    
+    const animation = (currentTime: number) => {
+      if (startTime === null) startTime = currentTime;
+      const timeElapsed = currentTime - startTime;
+      const progress = Math.min(timeElapsed / duration, 1);
+      const easedProgress = easeInOutQuad(progress);
       
-      // After a delay, try to scroll to the results section if it exists
-      setTimeout(() => {
-        const moviesSection = document.getElementById('movies-section');
-        if (moviesSection) {
-          moviesSection.scrollIntoView({ behavior: 'smooth' });
+      window.scrollTo(0, startPosition + distance * easedProgress);
+      
+      if (timeElapsed < duration) {
+        requestAnimationFrame(animation);
+      } else {
+        // After scrolling is complete, check if we need to scroll to results
+        // This ensures we only do one visual scroll movement
+        this.checkAndScrollToResults();
+      }
+    };
+    
+    requestAnimationFrame(animation);
+  }
+  
+  // Check for results and scroll if they exist
+  private checkAndScrollToResults(): void {
+    const moviesSection = document.getElementById('movies-section');
+    if (moviesSection) {
+      // If results are already available, scroll to them
+      this.smoothScroll(moviesSection);
+    } else {
+      // If results aren't ready yet, set up a mutation observer to detect when they appear
+      const observer = new MutationObserver((mutations, obs) => {
+        const resultsSection = document.getElementById('movies-section');
+        if (resultsSection) {
+          // Results are now available, scroll to them
+          this.smoothScroll(resultsSection);
+          obs.disconnect(); // Stop observing
         }
-      }, 1000); // Longer delay to allow for API response and rendering
+      });
+      
+      // Start observing the parent container for changes
+      const mainContent = document.querySelector('.main-content');
+      if (mainContent) {
+        observer.observe(mainContent, { 
+          childList: true, 
+          subtree: true 
+        });
+        
+        // Set a timeout to stop observing after a reasonable time
+        setTimeout(() => observer.disconnect(), 10000);
+      }
     }
   }
   
