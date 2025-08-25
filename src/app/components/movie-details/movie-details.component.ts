@@ -131,32 +131,37 @@ export class MovieDetailsComponent implements OnInit {
     const detailsObservable = this.isMovie 
       ? this.movieService.getMovieDetails(contentId)
       : this.movieService.getTVDetails(contentId);
-      
+    
     const watchProvidersObservable = this.isMovie
       ? this.movieService.getMovieWatchProviders(contentId)
       : this.movieService.getTVWatchProviders(contentId);
-    
+
+    // Also include countries in the parallel load to ensure it's available
     forkJoin({
-      content: detailsObservable,
+      details: detailsObservable,
       watchProviders: watchProvidersObservable,
       countries: this.movieService.getCountries()
     }).subscribe({
-      next: (results: any) => {
-        this.movie = results.content;
-        this.watchProviders = results.watchProviders.results || {};
-        this.countries = results.countries;
+      next: (data) => {
+        this.movie = data.details;
+        this.watchProviders = data.watchProviders.results;
+        
+        // Update country map with fresh data
+        data.countries.forEach((country: any) => {
+          this.countryMap[country.iso_3166_1] = country.english_name;
+        });
+        
+        this.loading = false;
+        
+        // Process availability after all data is loaded
         this.findAvailableCountries();
         this.organizeByPlatform();
         this.checkFranceAvailability();
-        this.loading = false;
-        
-        console.log(`${this.contentType} details loaded:`, this.movie);
-        console.log('Watch providers loaded:', this.watchProviders);
       },
-      error: (error: any) => {
-        console.error(`Error loading ${this.contentType} details:`, error);
-        this.loading = false;
+      error: (err) => {
+        console.error('Error loading movie details:', err);
         this.error = true;
+        this.loading = false;
       }
     });
   }
