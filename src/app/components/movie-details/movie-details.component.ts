@@ -174,7 +174,7 @@ export class MovieDetailsComponent implements OnInit {
       if (matchingProviders.length > 0) {
         tempAvailableCountries.push({
           countryCode,
-          countryName: this.countryMap[countryCode] || countryCode,
+          countryName: this.getCountryName(countryCode),
           providers: matchingProviders
         });
       }
@@ -327,5 +327,77 @@ export class MovieDetailsComponent implements OnInit {
   
   getFranceFlag(): string {
     return '🇫🇷';
+  }
+  
+  getCountryName(countryCode: string): string {
+    // First try the loaded country map
+    if (this.countryMap[countryCode]) {
+      return this.countryMap[countryCode];
+    }
+    
+    // Fallback to common country names
+    const commonCountries: {[key: string]: string} = {
+      'US': 'United States',
+      'CA': 'Canada',
+      'FR': 'France',
+      'GB': 'United Kingdom',
+      'DE': 'Germany',
+      'IT': 'Italy',
+      'ES': 'Spain',
+      'NL': 'Netherlands',
+      'BE': 'Belgium',
+      'AU': 'Australia',
+      'JP': 'Japan',
+      'KR': 'South Korea',
+      'BR': 'Brazil',
+      'MX': 'Mexico',
+      'AR': 'Argentina',
+      'IN': 'India',
+      'SG': 'Singapore',
+      'HK': 'Hong Kong',
+      'TW': 'Taiwan',
+      'TH': 'Thailand',
+      'MY': 'Malaysia',
+      'PH': 'Philippines',
+      'ID': 'Indonesia',
+      'VN': 'Vietnam',
+      'ZA': 'South Africa',
+      'EG': 'Egypt',
+      'TR': 'Turkey',
+      'RU': 'Russia',
+      'PL': 'Poland',
+      'CZ': 'Czech Republic',
+      'HU': 'Hungary',
+      'RO': 'Romania',
+      'BG': 'Bulgaria',
+      'HR': 'Croatia',
+      'SI': 'Slovenia',
+      'SK': 'Slovakia',
+      'LT': 'Lithuania',
+      'LV': 'Latvia',
+      'EE': 'Estonia',
+      'FI': 'Finland',
+      'SE': 'Sweden',
+      'NO': 'Norway',
+      'DK': 'Denmark',
+      'IS': 'Iceland',
+      'IE': 'Ireland',
+      'PT': 'Portugal',
+      'GR': 'Greece',
+      'CY': 'Cyprus',
+      'MT': 'Malta',
+      'LU': 'Luxembourg',
+      'AT': 'Austria',
+      'CH': 'Switzerland',
+      'LI': 'Liechtenstein',
+      'MC': 'Monaco',
+      'AD': 'Andorra',
+      'SM': 'San Marino',
+      'VA': 'Vatican City',
+      'CN': 'China',
+      'NZ': 'New Zealand'
+    };
+    
+    return commonCountries[countryCode] || countryCode;
   }
 }
