@@ -29,6 +29,36 @@ export class MovieService {
   }
 
   /**
+   * Search for TV shows by query
+   * @param query Search query
+   * @returns Observable of search results
+   */
+  searchTVShows(query: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/search/tv`, {
+      params: {
+        api_key: this.apiKey,
+        query: query,
+        include_adult: 'false'
+      }
+    });
+  }
+
+  /**
+   * Search for both movies and TV shows
+   * @param query Search query
+   * @returns Observable of combined search results
+   */
+  searchMulti(query: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/search/multi`, {
+      params: {
+        api_key: this.apiKey,
+        query: query,
+        include_adult: 'false'
+      }
+    });
+  }
+
+  /**
    * Get movie details by ID
    * @param movieId Movie ID
    * @returns Observable of movie details
@@ -42,12 +72,53 @@ export class MovieService {
   }
 
   /**
+   * Get TV show details by ID
+   * @param tvId TV show ID
+   * @returns Observable of TV show details
+   */
+  getTVDetails(tvId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/tv/${tvId}`, {
+      params: {
+        api_key: this.apiKey
+      }
+    });
+  }
+
+  /**
    * Get movie watch providers by ID and region
    * @param movieId Movie ID
    * @returns Observable of watch providers
    */
   getMovieWatchProviders(movieId: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/movie/${movieId}/watch/providers`, {
+      params: {
+        api_key: this.apiKey
+      }
+    });
+  }
+
+  /**
+   * Multi-search for movies and TV shows
+   * @param query Search query
+   * @returns Observable of search results
+   */
+  multiSearch(query: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/search/multi`, {
+      params: {
+        api_key: this.apiKey,
+        query: query,
+        include_adult: 'false'
+      }
+    });
+  }
+
+  /**
+   * Get TV show watch providers by ID and region
+   * @param tvId TV show ID
+   * @returns Observable of watch providers
+   */
+  getTVWatchProviders(tvId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/tv/${tvId}/watch/providers`, {
       params: {
         api_key: this.apiKey
       }
@@ -91,6 +162,20 @@ export class MovieService {
       })
     );
   }
+
+  /**
+   * Get TV watch providers
+   * @param region Region code (e.g., 'US')
+   * @returns Observable of TV watch providers
+   */
+  getTVWatchProvidersForRegion(region: string = 'US'): Observable<any> {
+    return this.http.get(`${this.apiUrl}/watch/providers/tv`, {
+      params: {
+        api_key: this.apiKey,
+        watch_region: region
+      }
+    });
+  }
   
   /**
    * Get list of watch providers by region
@@ -109,7 +194,7 @@ export class MovieService {
         if (response && response.results) {
           // Log all providers in this region
           console.log(`All providers in ${region}:`, 
-            response.results.map((p: any) => `${p.provider_name} (ID: ${p.provider_id})`))
+            response.results.map((p: any) => `${p.provider_name} (ID: ${p.provider_id})`));
           
           // Log providers with 'Prime' in their name
           const primeProviders = response.results.filter((p: any) => 
@@ -122,5 +207,19 @@ export class MovieService {
         }
       })
     );
+  }
+
+  /**
+   * Get TV watch providers by region
+   * @param region Region code (e.g., 'FR' for France)
+   * @returns Observable of TV watch providers available in the specified region
+   */
+  getTVWatchProvidersByRegion(region: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/watch/providers/tv`, {
+      params: {
+        api_key: this.apiKey,
+        watch_region: region
+      }
+    });
   }
 }

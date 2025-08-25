@@ -6,6 +6,69 @@
   flex-direction: column;
 }
 
+.content-type-selector {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.content-toggle {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 4px;
+  
+  ::ng-deep mat-button-toggle {
+    border: none !important;
+    background: transparent !important;
+    color: var(--text-color) !important;
+    border-radius: 6px !important;
+    margin: 0 2px;
+    
+    &.mat-button-toggle-checked {
+      background: var(--accent-color) !important;
+      color: white !important;
+    }
+    
+    .mat-button-toggle-label-content {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      
+      mat-icon {
+        font-size: 18px;
+        height: 18px;
+        width: 18px;
+      }
+      
+      span {
+        font-weight: 500;
+        font-size: 14px;
+      }
+    }
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.15) !important;
+    }
+  }
+  
+  @media (max-width: 600px) {
+    ::ng-deep mat-button-toggle .mat-button-toggle-label-content {
+      padding: 6px 12px;
+      
+      span {
+        font-size: 12px;
+      }
+      
+      mat-icon {
+        font-size: 16px;
+        height: 16px;
+        width: 16px;
+      }
+    }
+  }
+}
+
 .search-wrapper {
   display: flex;
   align-items: flex-start;

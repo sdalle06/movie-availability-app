@@ -15,14 +15,14 @@
     
     <div id="loading-section" *ngIf="loading" class="loading-container slide-up">
       <mat-spinner diameter="60" color="accent"></mat-spinner>
-      <p class="loading-text">Searching for movies...</p>
+      <p class="loading-text">Searching...</p>
     </div>
     
     <div id="movies-section" *ngIf="!loading && movies.length > 0" class="results-section slide-up">
       <div class="results-header">
         <div class="results-info">
           <h2 class="section-title">Search Results</h2>
-          <p class="results-count">Found <span class="count-highlight">{{ movies.length }}</span> movies</p>
+          <p class="results-count">Found <span class="count-highlight">{{ movies.length }}</span> results</p>
         </div>
       </div>
       
@@ -38,8 +38,8 @@
     <div *ngIf="!loading && searchPerformed && movies.length === 0" class="empty-state slide-up">
       <div class="empty-state-content">
         <mat-icon class="empty-icon">search_off</mat-icon>
-        <h3 class="empty-title">No Movies Found</h3>
-        <p class="empty-text">We couldn't find any movies matching your search criteria</p>
+        <h3 class="empty-title">No Results Found</h3>
+        <p class="empty-text">We couldn't find any content matching your search criteria</p>
         <button mat-raised-button color="accent" (click)="resetSearch()">
           <mat-icon>refresh</mat-icon>
           Try Another Search

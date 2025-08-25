@@ -9,7 +9,7 @@
     <div class="backdrop" [style.background-image]="'url(' + getFullBackdropPath(movie.backdrop_path) + ')'">
       <div class="backdrop-overlay">
         <div class="movie-title-container">
-          <h1 class="movie-title">{{ movie.title }}</h1>
+          <h1 class="movie-title">{{ contentTitle }}</h1>
           <p *ngIf="movie.tagline" class="movie-tagline">{{ movie.tagline }}</p>
         </div>
       </div>
@@ -34,24 +34,37 @@
         </div>
         
         <mat-card-content>
+          <div class="info-item" *ngIf="movie.runtime || movie.episode_run_time">
+            <mat-icon>schedule</mat-icon>
+            <span *ngIf="isMovie">{{ movie.runtime }} minutes</span>
+            <span *ngIf="isTVShow && movie.episode_run_time?.length">{{ movie.episode_run_time[0] }} min/episode</span>
+          </div>
           <div class="info-item">
             <mat-icon class="info-icon star-icon">star</mat-icon>
             <span class="info-text">{{ movie.vote_average?.toFixed(1) }} / 10</span>
             <span class="info-subtext">({{ movie.vote_count }} votes)</span>
           </div>
-          
-          <div class="info-item">
-            <mat-icon class="info-icon">calendar_today</mat-icon>
-            <span class="info-text">{{ getYear(movie.release_date) }}</span>
+          <div class="info-item" *ngIf="contentReleaseDate">
+            <mat-icon>calendar_today</mat-icon>
+            <span>{{ contentReleaseDate | date:'fullDate' }}</span>
           </div>
-          
+          <div class="info-item" *ngIf="movie.media_type || contentType">
+            <mat-icon>{{ isTVShow ? 'tv' : 'movie' }}</mat-icon>
+            <span>{{ isTVShow ? 'TV Show' : 'Movie' }}</span>
+          </div>
           <div *ngIf="movie.runtime" class="info-item">
             <mat-icon class="info-icon">access_time</mat-icon>
             <span class="info-text">{{ formatRuntime(movie.runtime) }}</span>
           </div>
-          
           <mat-divider class="divider"></mat-divider>
-          
+          <div class="info-item" *ngIf="movie.genres && movie.genres.length > 0">
+            <mat-icon>category</mat-icon>
+            <span>{{ getGenreNames() }}</span>
+          </div>
+          <div class="info-item" *ngIf="isTVShow && movie.number_of_seasons">
+            <mat-icon>tv</mat-icon>
+            <span>{{ movie.number_of_seasons }} Season{{ movie.number_of_seasons > 1 ? 's' : '' }}</span>
+          </div>
           <div *ngIf="movie.genres && movie.genres.length > 0" class="genres-container">
             <h3 class="section-title">Genres</h3>
             <div class="genres">

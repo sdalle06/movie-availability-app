@@ -1,11 +1,28 @@
 <div class="search-container">
+  <div class="content-type-selector">
+    <mat-button-toggle-group [formControl]="contentTypeControl" class="content-toggle">
+      <mat-button-toggle value="multi">
+        <mat-icon>search</mat-icon>
+        <span>All</span>
+      </mat-button-toggle>
+      <mat-button-toggle value="movie">
+        <mat-icon>movie</mat-icon>
+        <span>Movies</span>
+      </mat-button-toggle>
+      <mat-button-toggle value="tv">
+        <mat-icon>tv</mat-icon>
+        <span>TV Shows</span>
+      </mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+  
   <div class="search-wrapper">
     <mat-form-field appearance="outline" class="search-field">
-      <mat-label>Find movies</mat-label>
+      <mat-label>Find content</mat-label>
       <input 
         matInput 
         [formControl]="searchControl" 
-        placeholder="Enter movie title" 
+        placeholder="Enter title to search" 
         (keyup.enter)="onSearch()"
         autocomplete="off"
       >
@@ -28,10 +45,8 @@
       (click)="onSearch()"
       [disabled]="!searchControl.value"
     >
-      <mat-icon>movie_filter</mat-icon>
-      <span>Find Movies</span>
+      <mat-icon>search</mat-icon>
+      <span>Search</span>
     </button>
   </div>
-  
-  <!-- Search hint removed as requested -->
 </div>

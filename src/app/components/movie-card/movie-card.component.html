@@ -16,9 +16,14 @@
           </div>
         </div>
         
-        <button mat-raised-button color="accent" class="view-details-btn">
-          <mat-icon>visibility</mat-icon>
-          <span>View Details</span>
+        <button 
+          mat-raised-button 
+          color="primary" 
+          class="details-button"
+          [routerLink]="[isMovie ? '/movies' : '/tv', movie.id]"
+        >
+          <mat-icon>info</mat-icon>
+          View Details
         </button>
       </div>
     </div>
@@ -34,18 +39,23 @@
   </div>
   
   <mat-card-content>
-    <h3 class="movie-title" [title]="movie.title">{{ movie.title }}</h3>
-    <div class="movie-info">
-      <div class="info-row">
-        <span class="year">
-          <mat-icon class="info-icon">date_range</mat-icon>
-          {{ getYear(movie.release_date) }}
-        </span>
-        
-        <span class="genre" *ngIf="movie.genre_ids?.length">
-          <mat-icon class="info-icon">category</mat-icon>
-          {{ getGenreName(movie.genre_ids[0]) }}
-        </span>
+    <div class="card-header">
+      <h3 class="movie-title" [title]="contentTitle">{{ contentTitle }}</h3>
+      <div class="content-type-badge" *ngIf="movie.media_type">
+        <mat-icon class="type-icon">{{ isTVShow ? 'live_tv' : 'local_movies' }}</mat-icon>
+        <span class="type-text">{{ isTVShow ? 'Series' : 'Movie' }}</span>
+      </div>
+    </div>
+    
+    <div class="card-details">
+      <div class="detail-item">
+        <mat-icon class="detail-icon">event</mat-icon>
+        <span class="detail-text">{{ getYear(contentReleaseDate) }}</span>
+      </div>
+      
+      <div class="detail-item" *ngIf="movie.genre_ids && movie.genre_ids.length > 0">
+        <mat-icon class="detail-icon">local_offer</mat-icon>
+        <span class="detail-text">{{ getGenreName(movie.genre_ids[0]) }}</span>
       </div>
     </div>
   </mat-card-content>

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -8,7 +8,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatListModule } from '@angular/material/list';
-
+import { forkJoin } from 'rxjs';
 import { MovieService } from '../../services/movie.service';
 
 interface CountryAvailability {
@@ -46,15 +46,40 @@ interface PlatformAvailability {
 })
 export class MovieDetailsComponent implements OnInit {
   movie: any = null;
-  watchProviders: any = {};
+  watchProviders: any = null;
   loading = true;
-  error = '';
-  movieId: number = 0;
+  error = false;
+  countries: any[] = [];
   selectedPlatforms: number[] = [];
+  isAvailableInFrance = false;
+  contentType: 'movie' | 'tv' = 'movie';
+  
+  get isMovie(): boolean {
+    return this.contentType === 'movie';
+  }
+  
+  get isTVShow(): boolean {
+    return this.contentType === 'tv';
+  }
+  
+  get contentTitle(): string {
+    return this.movie?.title || this.movie?.name || 'Unknown Title';
+  }
+  
+  get contentReleaseDate(): string {
+    return this.movie?.release_date || this.movie?.first_air_date || '';
+  }
+  
+  getGenreNames(): string {
+    if (!this.movie?.genres || this.movie.genres.length === 0) {
+      return '';
+    }
+    return this.movie.genres.map((g: any) => g.name).join(', ');
+  }
+  
   availableCountries: CountryAvailability[] = [];
   availablePlatforms: PlatformAvailability[] = [];
   countryMap: {[code: string]: string} = {};
-  isAvailableInFrance = false;
   
   // List of European country codes
   private europeanCountryCodes: string[] = [
@@ -76,17 +101,18 @@ export class MovieDetailsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Get movie ID from route params
-    this.route.paramMap.subscribe(params => {
-      const id = params.get('id');
-      if (id) {
-        this.movieId = +id;
-        this.loadMovieDetails();
-      } else {
-        this.router.navigate(['/movies']);
+    this.route.url.subscribe(urlSegments => {
+      // Determine content type from route segments
+      this.contentType = urlSegments[0]?.path === 'tv' ? 'tv' : 'movie';
+    });
+    
+    this.route.params.subscribe(params => {
+      const contentId = +params['id'];
+      
+      if (contentId) {
+        this.loadContentDetails(contentId);
       }
     });
-
     // Get selected platforms from localStorage if available
     const storedPlatforms = localStorage.getItem('selectedPlatforms');
     if (storedPlatforms) {
@@ -97,37 +123,40 @@ export class MovieDetailsComponent implements OnInit {
     this.loadCountries();
   }
 
-  loadMovieDetails(): void {
+  private loadContentDetails(contentId: number): void {
     this.loading = true;
+    this.error = false;
     
-    // Load movie details
-    this.movieService.getMovieDetails(this.movieId).subscribe({
-      next: (data) => {
-        this.movie = data;
-        // Load watch providers after movie details are loaded
-        this.loadWatchProviders();
-      },
-      error: (err) => {
-        console.error('Error loading movie details:', err);
-        this.error = 'Failed to load movie details';
-        this.loading = false;
-      }
-    });
-  }
-
-  loadWatchProviders(): void {
-    this.movieService.getMovieWatchProviders(this.movieId).subscribe({
-      next: (data) => {
-        this.watchProviders = data.results || {};
+    // Load content details and watch providers in parallel based on content type
+    const detailsObservable = this.isMovie 
+      ? this.movieService.getMovieDetails(contentId)
+      : this.movieService.getTVDetails(contentId);
+      
+    const watchProvidersObservable = this.isMovie
+      ? this.movieService.getMovieWatchProviders(contentId)
+      : this.movieService.getTVWatchProviders(contentId);
+    
+    forkJoin({
+      content: detailsObservable,
+      watchProviders: watchProvidersObservable,
+      countries: this.movieService.getCountries()
+    }).subscribe({
+      next: (results: any) => {
+        this.movie = results.content;
+        this.watchProviders = results.watchProviders.results || {};
+        this.countries = results.countries;
         this.findAvailableCountries();
         this.organizeByPlatform();
         this.checkFranceAvailability();
         this.loading = false;
+        
+        console.log(`${this.contentType} details loaded:`, this.movie);
+        console.log('Watch providers loaded:', this.watchProviders);
       },
-      error: (err) => {
-        console.error('Error loading watch providers:', err);
-        this.error = 'Failed to load movie availability';
+      error: (error: any) => {
+        console.error(`Error loading ${this.contentType} details:`, error);
         this.loading = false;
+        this.error = true;
       }
     });
   }

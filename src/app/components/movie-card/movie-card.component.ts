@@ -20,6 +20,33 @@ export class MovieCardComponent implements OnInit {
   isAvailableInFrance = false;
   checkingAvailability = false;
   
+  get isMovie(): boolean {
+    return this.movie?.media_type === 'movie' || (!this.movie?.media_type && this.movie?.title);
+  }
+  
+  get isTVShow(): boolean {
+    return this.movie?.media_type === 'tv' || (!this.movie?.media_type && this.movie?.name);
+  }
+  
+  get contentTitle(): string {
+    return this.movie?.title || this.movie?.name || 'Unknown Title';
+  }
+  
+  get contentReleaseDate(): string | null {
+    // For movies, use release_date
+    if (this.isMovie && this.movie?.release_date) {
+      return this.movie.release_date;
+    }
+    
+    // For TV shows, use first_air_date
+    if (this.isTVShow && this.movie?.first_air_date) {
+      return this.movie.first_air_date;
+    }
+    
+    // Fallback: try both fields regardless of media type
+    return this.movie?.release_date || this.movie?.first_air_date || null;
+  }
+  
   // Environment configuration for image paths
   private imageBaseUrl = 'https://image.tmdb.org/t/p/';
   private posterSize = 'w500';
@@ -32,40 +59,43 @@ export class MovieCardComponent implements OnInit {
     }
   }
   
-  checkFranceAvailability(): void {
-    if (!this.movie?.id || this.selectedPlatforms.length === 0) {
+  private checkFranceAvailability(): void {
+    if (!this.movie?.id) {
       return;
     }
     
     this.checkingAvailability = true;
     
-    this.movieService.getMovieWatchProviders(this.movie.id).subscribe({
-      next: (data) => {
-        const watchProviders = data.results || {};
-        const franceData = watchProviders['FR'];
+    // Use appropriate service method based on content type
+    const watchProvidersObservable = this.isMovie 
+      ? this.movieService.getMovieWatchProviders(this.movie.id)
+      : this.movieService.getTVWatchProviders(this.movie.id);
+    
+    watchProvidersObservable.subscribe({
+      next: (response) => {
+        this.checkingAvailability = false;
         
-        if (franceData) {
-          // Combine all providers (flatrate, rent, buy)
-          const allProviders = [
-            ...(franceData.flatrate || []),
-            ...(franceData.rent || []),
-            ...(franceData.buy || [])
+        // Check if content is available in France
+        const franceProviders = response.results?.FR;
+        if (franceProviders) {
+          const availableProviders = [
+            ...(franceProviders.flatrate || []),
+            ...(franceProviders.rent || []),
+            ...(franceProviders.buy || [])
           ];
           
-          // Check if any provider matches selected platforms
-          this.isAvailableInFrance = allProviders.some(
-            (provider: any) => this.selectedPlatforms.includes(provider.provider_id)
+          // Check if any of the available providers match selected platforms
+          this.isAvailableInFrance = availableProviders.some((provider: any) => 
+            this.selectedPlatforms.includes(provider.provider_id)
           );
         } else {
           this.isAvailableInFrance = false;
         }
-        
-        this.checkingAvailability = false;
       },
-      error: (err) => {
-        console.error('Error checking France availability:', err);
-        this.isAvailableInFrance = false;
+      error: (error) => {
+        console.error('Error checking France availability:', error);
         this.checkingAvailability = false;
+        this.isAvailableInFrance = false;
       }
     });
   }
@@ -74,12 +104,24 @@ export class MovieCardComponent implements OnInit {
     if (posterPath) {
       return `${this.imageBaseUrl}${this.posterSize}${posterPath}`;
     }
-    return 'assets/no-image.png';
+    // Return a data URL for a simple gray placeholder instead of missing file
+    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQ1MCIgdmlld0JveD0iMCAwIDMwMCA0NTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNDUwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xMjUgMTc1SDE3NVYyMjVIMTI1VjE3NVoiIGZpbGw9IiM5Q0EzQUYiLz4KPHA+CjxwYXRoIGQ9Ik0xNDMuNzUgMjA2LjI1TDE1Ni4yNSAxOTMuNzVMMTc1IDIxMi41TDE1Ni4yNSAyMzEuMjVMMTQzLjc1IDIxOC43NUwxMzEuMjUgMjMxLjI1TDEyNSAyMjVMMTM3LjUgMjEyLjVMMTI1IDE5My43NUwxMzEuMjUgMTg3LjVMMTQzLjc1IDIwNi4yNVoiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+';
   }
   
   getYear(dateString: string | null): string {
-    if (!dateString) return 'Unknown';
-    return new Date(dateString).getFullYear().toString();
+    if (!dateString || dateString.trim() === '') {
+      // Try to get year from alternative sources for TV shows
+      if (this.isTVShow) {
+        // Check if there's a year in the name/title
+        const titleMatch = this.contentTitle.match(/\((\d{4})\)/);
+        if (titleMatch) {
+          return titleMatch[1];
+        }
+      }
+      return 'TBA'; // "To Be Announced" instead of "Unknown"
+    }
+    const year = new Date(dateString).getFullYear();
+    return isNaN(year) ? 'TBA' : year.toString();
   }
   
   getGenreName(genreId: number): string {

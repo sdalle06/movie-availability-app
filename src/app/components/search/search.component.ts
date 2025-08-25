@@ -5,6 +5,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
 @Component({
   selector: 'app-search',
@@ -15,19 +16,22 @@ import { MatIconModule } from '@angular/material/icon';
     MatInputModule,
     MatFormFieldModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    MatButtonToggleModule
   ],
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.scss']
 })
 export class SearchComponent {
-  @Output() search = new EventEmitter<string>();
+  @Output() search = new EventEmitter<{query: string, contentType: string}>();
   searchControl = new FormControl('');
+  contentTypeControl = new FormControl('multi');
 
   onSearch(): void {
     const query = this.searchControl.value?.trim();
+    const contentType = this.contentTypeControl.value || 'multi';
     if (query) {
-      this.search.emit(query);
+      this.search.emit({query, contentType});
       
       // Simplified scrolling approach to avoid blocking issues
       setTimeout(() => {

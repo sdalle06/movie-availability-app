@@ -42,16 +42,35 @@ export class MovieListComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  onSearch(query: string): void {
-    if (!query.trim()) return;
+  onSearch(searchData: {query: string, contentType: string}): void {
+    if (!searchData.query.trim()) {
+      return;
+    }
     
     this.loading = true;
     this.searchPerformed = true;
-    this.lastSearchQuery = query;
+    this.lastSearchQuery = searchData.query;
     
-    this.movieService.searchMovies(query).subscribe({
-      next: (response) => {
+    let searchObservable;
+    
+    switch (searchData.contentType) {
+      case 'movie':
+        searchObservable = this.movieService.searchMovies(searchData.query);
+        break;
+      case 'tv':
+        searchObservable = this.movieService.searchTVShows(searchData.query);
+        break;
+      case 'multi':
+      default:
+        searchObservable = this.movieService.multiSearch(searchData.query);
+        break;
+    }
+    
+    searchObservable.subscribe({
+      next: (response: any) => {
         this.movies = response.results;
+        console.log('Search results:', response.results);
+        console.log('First result:', response.results[0]);
         this.loading = false;
         
         // If results are available, scroll to them with a small delay
@@ -65,17 +84,19 @@ export class MovieListComponent implements OnInit {
         }
         
         if (this.movies.length === 0) {
-          this.snackBar.open('No movies found. Try a different search term.', 'Close', {
+          const contentTypeText = searchData.contentType === 'movie' ? 'movies' : 
+                                 searchData.contentType === 'tv' ? 'TV shows' : 'content';
+          this.snackBar.open(`No ${contentTypeText} found. Try a different search term.`, 'Close', {
             duration: 3000
           });
         }
       },
-      error: (error) => {
-        console.error('Error searching movies:', error);
+      error: (error: any) => {
+        console.error('Error searching:', error);
         this.loading = false;
         this.movies = [];
         
-        this.snackBar.open('Error searching movies. Please try again.', 'Close', {
+        this.snackBar.open('Error searching. Please try again.', 'Close', {
           duration: 3000
         });
       }
