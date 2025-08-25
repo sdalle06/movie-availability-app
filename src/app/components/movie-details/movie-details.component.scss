@@ -132,18 +132,31 @@ mat-card-content {
   border-radius: 4px;
 }
 
+/* Disable hover effects on all mat-card elements */
+mat-card {
+  &:hover {
+    transform: none !important;
+    box-shadow: inherit !important;
+  }
+}
+
 .info-item {
   display: flex;
   align-items: center;
   margin-bottom: 15px;
+  gap: 12px;
   
   @media (max-width: 480px) {
     margin-bottom: 10px;
+    gap: 10px;
   }
 }
 
 .info-icon {
-  margin-right: 10px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   
   @media (max-width: 480px) {
     font-size: 18px;
@@ -212,6 +225,12 @@ mat-card-content {
   color: var(--text-primary);
   background-color: var(--background-card);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  
+  /* Disable any hover effects on cards */
+  &:hover {
+    transform: none !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+  }
   
   @media (max-width: 480px) {
     margin-bottom: 16px;
@@ -413,12 +432,6 @@ mat-card-content {
 }
 
 /* France availability highlighting */
-.container.france-available {
-  .backdrop {
-    border: 3px solid #0055A4;
-    box-shadow: 0 8px 24px rgba(0, 85, 164, 0.3);
-  }
-}
 
 .poster-container {
   position: relative;
@@ -465,12 +478,7 @@ mat-card-content {
 }
 
 mat-card.france-available {
-  border: 2px solid #0055A4 !important;
   box-shadow: 0 6px 16px rgba(0, 85, 164, 0.3) !important;
-  
-  &:hover {
-    box-shadow: 0 8px 20px rgba(0, 85, 164, 0.4) !important;
-  }
 }
 
 .france-indicator {
@@ -494,7 +502,6 @@ mat-card.france-available {
 .country-chip.france-country {
   background: linear-gradient(135deg, #0055A4 0%, #EF4135 50%, #FFFFFF 100%) !important;
   color: white !important;
-  border: 2px solid #0055A4 !important;
   font-weight: 700 !important;
   box-shadow: 0 3px 8px rgba(0, 85, 164, 0.4) !important;
   transform: scale(1.05);
