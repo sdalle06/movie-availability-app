@@ -29,7 +29,8 @@
       <div class="movies-grid">
         <app-movie-card 
           *ngFor="let movie of movies" 
-          [movie]="movie">
+          [movie]="movie"
+          [selectedPlatforms]="selectedPlatforms">
         </app-movie-card>
       </div>
     </div>

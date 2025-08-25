@@ -54,6 +54,7 @@ export class MovieDetailsComponent implements OnInit {
   availableCountries: CountryAvailability[] = [];
   availablePlatforms: PlatformAvailability[] = [];
   countryMap: {[code: string]: string} = {};
+  isAvailableInFrance = false;
   
   // List of European country codes
   private europeanCountryCodes: string[] = [
@@ -120,6 +121,7 @@ export class MovieDetailsComponent implements OnInit {
         this.watchProviders = data.results || {};
         this.findAvailableCountries();
         this.organizeByPlatform();
+        this.checkFranceAvailability();
         this.loading = false;
       },
       error: (err) => {
@@ -296,5 +298,34 @@ export class MovieDetailsComponent implements OnInit {
     
     // Convert the code points to emoji
     return String.fromCodePoint(...codePoints);
+  }
+  
+  checkFranceAvailability(): void {
+    if (!this.watchProviders || !this.selectedPlatforms.length) {
+      this.isAvailableInFrance = false;
+      return;
+    }
+    
+    const franceData = this.watchProviders['FR'];
+    
+    if (franceData) {
+      // Combine all providers (flatrate, rent, buy)
+      const allProviders = [
+        ...(franceData.flatrate || []),
+        ...(franceData.rent || []),
+        ...(franceData.buy || [])
+      ];
+      
+      // Check if any provider matches selected platforms
+      this.isAvailableInFrance = allProviders.some(
+        (provider: any) => this.selectedPlatforms.includes(provider.provider_id)
+      );
+    } else {
+      this.isAvailableInFrance = false;
+    }
+  }
+  
+  getFranceFlag(): string {
+    return '🇫🇷';
   }
 }

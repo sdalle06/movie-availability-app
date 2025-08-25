@@ -1,4 +1,4 @@
-<div class="container" *ngIf="!loading && movie">
+<div class="container" *ngIf="!loading && movie" [ngClass]="{'france-available': isAvailableInFrance}">
   <!-- Back button -->
   <button mat-button color="primary" (click)="goBack()" class="back-button">
     <mat-icon>arrow_back</mat-icon> Back to Search
@@ -20,11 +20,18 @@
   <div class="movie-details-grid">
     <!-- Left column: Poster and basic info -->
     <div class="poster-column">
-      <mat-card>
-        <img 
-          [src]="getFullPosterPath(movie.poster_path)" 
-          [alt]="movie.title" 
-          class="movie-poster">
+      <mat-card [ngClass]="{'france-available': isAvailableInFrance}">
+        <div class="poster-container">
+          <img 
+            [src]="getFullPosterPath(movie.poster_path)" 
+            [alt]="movie.title" 
+            class="movie-poster">
+          
+          <div class="france-badge" *ngIf="isAvailableInFrance">
+            <span class="france-flag">{{ getFranceFlag() }}</span>
+            <span class="france-text">Available in France</span>
+          </div>
+        </div>
         
         <mat-card-content>
           <div class="info-item">
@@ -72,9 +79,14 @@
       </mat-card>
       
       <!-- Availability -->
-      <mat-card class="availability-card">
+      <mat-card class="availability-card" [ngClass]="{'france-available': isAvailableInFrance}">
         <mat-card-header>
-          <mat-card-title>Availability on Your Platforms</mat-card-title>
+          <mat-card-title>
+            <span>Availability on Your Platforms</span>
+            <span class="france-indicator" *ngIf="isAvailableInFrance">
+              {{ getFranceFlag() }} Available in France!
+            </span>
+          </mat-card-title>
         </mat-card-header>
         <mat-card-content>
           <!-- No platforms selected -->
@@ -105,7 +117,13 @@
                   <h4 class="countries-title">Available in {{ platform.countries.length }} {{ platform.countries.length === 1 ? 'country' : 'countries' }}:</h4>
                   <div class="country-chips">
                     <mat-chip-set>
-                      <mat-chip *ngFor="let country of platform.countries" class="country-chip">
+                      <mat-chip *ngFor="let country of platform.countries" 
+                                class="country-chip" 
+                                [ngClass]="{
+                                  'france-country': country.countryCode === 'FR',
+                                  'us-country': country.countryCode === 'US',
+                                  'canada-country': country.countryCode === 'CA'
+                                }">
                         <span class="country-flag">{{ getFlagEmoji(country.countryCode) }}</span>
                         {{ country.countryName }}
                       </mat-chip>

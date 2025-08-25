@@ -11,6 +11,15 @@
   border: none !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
   
+  &.france-available {
+    border: 2px solid #0055A4 !important;
+    box-shadow: 0 4px 12px rgba(0, 85, 164, 0.3) !important;
+    
+    &:hover {
+      box-shadow: 0 12px 24px rgba(0, 85, 164, 0.4) !important;
+    }
+  }
+  
   &:hover {
     transform: translateY(-8px);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2) !important;
@@ -302,4 +311,50 @@ mat-card-content {
     align-items: flex-start;
     gap: 4px;
   }
+}
+
+/* France availability badge */
+.france-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: linear-gradient(135deg, #0055A4 0%, #EF4135 50%, #FFFFFF 100%);
+  color: white;
+  border-radius: 6px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 11px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 3;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+  
+  .france-flag {
+    margin-right: 4px;
+    font-size: 12px;
+  }
+  
+  .france-text {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+}
+
+/* France availability highlighting */
+.movie-card.france-available {
+  border: 2px solid #0055A4 !important;
+  box-shadow: 0 4px 12px rgba(0, 85, 164, 0.3) !important;
+  
+  &:hover {
+    box-shadow: 0 12px 24px rgba(0, 85, 164, 0.4) !important;
+  }
+}
+
+/* Adjust rating badge position when France badge is present */
+.movie-card.france-available .rating-badge {
+  top: 50px;
 }

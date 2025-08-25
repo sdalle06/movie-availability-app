@@ -1,4 +1,4 @@
-<mat-card class="movie-card" [routerLink]="['/movies', movie.id]">
+<mat-card class="movie-card" [routerLink]="['/movies', movie.id]" [ngClass]="{'france-available': isAvailableInFrance}">
   <div class="poster-container">
     <img 
       mat-card-image 
@@ -25,6 +25,11 @@
     
     <div class="rating-badge" *ngIf="movie.vote_average">
       <span [ngClass]="{'high-rating': movie.vote_average >= 7, 'medium-rating': movie.vote_average >= 5 && movie.vote_average < 7, 'low-rating': movie.vote_average < 5}">{{ movie.vote_average.toFixed(1) }}</span>
+    </div>
+    
+    <div class="france-badge" *ngIf="isAvailableInFrance">
+      <span class="france-flag">{{ getFranceFlag() }}</span>
+      <span class="france-text">Available in France</span>
     </div>
   </div>
   
