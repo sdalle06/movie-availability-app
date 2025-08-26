@@ -8,7 +8,8 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatListModule } from '@angular/material/list';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { MovieService } from '../../services/movie.service';
 
 interface CountryAvailability {
@@ -49,6 +50,7 @@ export class MovieDetailsComponent implements OnInit {
   watchProviders: any = null;
   loading = true;
   error = false;
+  errorMessage = '';
   countries: any[] = [];
   selectedPlatforms: number[] = [];
   isAvailableInFrance = false;
@@ -136,32 +138,61 @@ export class MovieDetailsComponent implements OnInit {
       ? this.movieService.getMovieWatchProviders(contentId)
       : this.movieService.getTVWatchProviders(contentId);
 
-    // Also include countries in the parallel load to ensure it's available
-    forkJoin({
-      details: detailsObservable,
-      watchProviders: watchProvidersObservable,
-      countries: this.movieService.getCountries()
-    }).subscribe({
-      next: (data) => {
-        this.movie = data.details;
-        this.watchProviders = data.watchProviders.results;
+    // Load details first, then handle watch providers separately
+    detailsObservable.subscribe({
+      next: (movieDetails) => {
+        this.movie = movieDetails;
         
-        // Update country map with fresh data
-        data.countries.forEach((country: any) => {
-          this.countryMap[country.iso_3166_1] = country.english_name;
+        // Now load additional data in parallel
+        forkJoin({
+          watchProviders: watchProvidersObservable.pipe(
+            catchError(err => {
+              console.error('Error loading watch providers:', err);
+              return of({ results: {} }); // Return empty results instead of failing
+            })
+          ),
+          countries: this.movieService.getCountries().pipe(
+            catchError(err => {
+              console.error('Error loading countries:', err);
+              return of([]); // Return empty array instead of failing
+            })
+          )
+        }).subscribe({
+          next: (data) => {
+            this.watchProviders = data.watchProviders.results;
+            
+            // Update country map with fresh data
+            if (Array.isArray(data.countries)) {
+              data.countries.forEach((country: any) => {
+                this.countryMap[country.iso_3166_1] = country.english_name;
+              });
+            }
+            
+            this.loading = false;
+            
+            // Process availability after all data is loaded
+            this.findAvailableCountries();
+            this.organizeByPlatform();
+            this.checkFranceAvailability();
+          },
+          error: (err) => {
+            console.error('Error loading additional data:', err);
+            // Still show the movie even if additional data fails
+            this.loading = false;
+          }
         });
-        
-        this.loading = false;
-        
-        // Process availability after all data is loaded
-        this.findAvailableCountries();
-        this.organizeByPlatform();
-        this.checkFranceAvailability();
       },
       error: (err) => {
-        console.error('Error loading movie details:', err);
+        console.error('Error loading content details:', err);
         this.error = true;
         this.loading = false;
+        
+        // Handle specific error types
+        if (err.status === 404) {
+          this.errorMessage = `${this.contentType === 'movie' ? 'Movie' : 'TV Show'} not found. The ID ${this.route.snapshot.params['id']} doesn't exist in the database.`;
+        } else {
+          this.errorMessage = `Failed to load ${this.contentType === 'movie' ? 'movie' : 'TV show'} details. Please try again later.`;
+        }
       }
     });
   }

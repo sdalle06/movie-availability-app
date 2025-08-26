@@ -1,4 +1,4 @@
-<mat-card class="movie-card" [routerLink]="['/movies', movie.id]" [ngClass]="{'france-available': isAvailableInFrance}">
+<mat-card class="movie-card" [routerLink]="[isMovie ? '/movies' : '/tv', movie.id]" [ngClass]="{'france-available': isAvailableInFrance}">
   <div class="poster-container">
     <img 
       mat-card-image 
