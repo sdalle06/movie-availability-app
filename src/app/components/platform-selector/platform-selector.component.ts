@@ -43,6 +43,7 @@ export class PlatformSelectorComponent implements OnInit, AfterViewInit {
     119,  // Amazon Prime Video 
     337,  // Disney+
     350,  // Apple TV+
+    531,  // Paramount+
     283,  // Crunchyroll
     1899, // Max
   ];
