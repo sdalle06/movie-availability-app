@@ -166,8 +166,57 @@ mat-toolbar {
     height: 32px;
     margin-right: 8px;
   }
-  
+
   .title {
     font-size: 16px;
+  }
+}
+
+// Mobile bottom navigation
+.mobile-nav {
+  display: none;
+
+  @media (max-width: 768px) {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: linear-gradient(135deg, var(--primary-color-dark, #1a0a2e), var(--primary-color, #7c3aed));
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    justify-content: space-around;
+    align-items: center;
+    padding: 6px 0;
+    padding-bottom: calc(6px + env(safe-area-inset-bottom));
+  }
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 6px 16px;
+  border-radius: 8px;
+  transition: color 0.2s ease;
+
+  mat-icon {
+    font-size: 22px;
+    height: 22px;
+    width: 22px;
+  }
+
+  &.active {
+    color: white;
+  }
+
+  &:active {
+    background: rgba(255, 255, 255, 0.1);
   }
 }
