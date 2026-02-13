@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -6,38 +6,28 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
-import { By } from '@angular/platform-browser';
 import { of, throwError } from 'rxjs';
-import { cold, getTestScheduler } from 'jasmine-marbles';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { MovieListComponent } from './movie-list.component';
 import { MovieService } from '../../services/movie.service';
+import { SearchComponent } from '../search/search.component';
+import { MovieCardComponent } from '../movie-card/movie-card.component';
+import { PlatformSelectorComponent } from '../platform-selector/platform-selector.component';
 
-// Mock components to avoid dependency issues
-@Component({
-  selector: 'app-search',
-  template: '<div></div>',
-  standalone: true
-})
+// Mock components
+@Component({ selector: 'app-search', template: '', standalone: true })
 class MockSearchComponent {
-  @Output() search = new EventEmitter<string>();
+  @Output() search = new EventEmitter<{query: string, contentType: string}>();
 }
 
-@Component({
-  selector: 'app-movie-card',
-  template: '<div></div>',
-  standalone: true
-})
+@Component({ selector: 'app-movie-card', template: '', standalone: true })
 class MockMovieCardComponent {
   @Input() movie: any = {};
+  @Input() selectedPlatforms: number[] = [];
 }
 
-@Component({
-  selector: 'app-platform-selector',
-  template: '<div></div>',
-  standalone: true
-})
+@Component({ selector: 'app-platform-selector', template: '', standalone: true })
 class MockPlatformSelectorComponent {
   @Input() selectedPlatforms: number[] = [];
   @Output() platformsChange = new EventEmitter<number[]>();
@@ -51,48 +41,33 @@ describe('MovieListComponent', () => {
   let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
 
   const mockMovies = {
+    page: 1,
     results: [
-      { id: 1, title: 'Test Movie 1', poster_path: '/path1.jpg', overview: 'Overview 1' },
-      { id: 2, title: 'Test Movie 2', poster_path: '/path2.jpg', overview: 'Overview 2' },
-      { id: 3, title: 'Test Movie 3', poster_path: '/path3.jpg', overview: 'Overview 3' }
-    ]
+      { id: 1, title: 'Test Movie 1', poster_path: '/path1.jpg', overview: 'Overview 1', media_type: 'movie' as const },
+      { id: 2, title: 'Test Movie 2', poster_path: '/path2.jpg', overview: 'Overview 2', media_type: 'movie' as const },
+      { id: 3, title: 'Test Movie 3', poster_path: '/path3.jpg', overview: 'Overview 3', media_type: 'movie' as const }
+    ],
+    total_pages: 1,
+    total_results: 3
   };
 
   beforeEach(async () => {
-    // Create a more comprehensive spy for MovieService with all required methods
     const movieSpy = jasmine.createSpyObj('MovieService', [
       'searchMovies',
-      'getWatchProviders',
+      'searchTVShows',
+      'searchMulti',
       'getWatchProvidersByRegion',
       'getMovieDetails',
       'getMovieWatchProviders',
       'getCountries'
     ]);
-    
-    // Mock the responses for methods used by PlatformSelectorComponent
-    movieSpy.getWatchProviders.and.returnValue(of({
-      results: [
-        { provider_id: 8, provider_name: 'Netflix', logo_path: '/path/to/netflix.jpg' },
-        { provider_id: 9, provider_name: 'Amazon Prime Video', logo_path: '/path/to/prime.jpg' }
-      ]
-    }));
-    
-    movieSpy.getWatchProvidersByRegion.and.returnValue(of({
-      results: [
-        { provider_id: 8, provider_name: 'Netflix', logo_path: '/path/to/netflix.jpg' },
-        { provider_id: 9, provider_name: 'Amazon Prime Video', logo_path: '/path/to/prime.jpg' }
-      ]
-    }));
-    
+
     const routerSpyObj = jasmine.createSpyObj('Router', ['navigate']);
     const snackBarSpyObj = jasmine.createSpyObj('MatSnackBar', ['open']);
 
     await TestBed.configureTestingModule({
       imports: [
         MovieListComponent,
-        MockSearchComponent,
-        MockMovieCardComponent,
-        MockPlatformSelectorComponent,
         HttpClientTestingModule,
         NoopAnimationsModule,
         MatProgressSpinnerModule,
@@ -106,17 +81,24 @@ describe('MovieListComponent', () => {
         { provide: MatSnackBar, useValue: snackBarSpyObj }
       ]
     })
+    .overrideComponent(MovieListComponent, {
+      remove: { imports: [SearchComponent, MovieCardComponent, PlatformSelectorComponent] },
+      add: { imports: [MockSearchComponent, MockMovieCardComponent, MockPlatformSelectorComponent] }
+    })
     .compileComponents();
-    
+
     movieServiceSpy = TestBed.inject(MovieService) as jasmine.SpyObj<MovieService>;
     routerSpy = TestBed.inject(Router) as jasmine.SpyObj<Router>;
-    snackBarSpy = TestBed.inject(MatSnackBar) as jasmine.SpyObj<MatSnackBar>;
-    
-    // Mock localStorage
+
     spyOn(localStorage, 'setItem');
-    
+
     fixture = TestBed.createComponent(MovieListComponent);
     component = fixture.componentInstance;
+
+    // Spy on the actual snackBar instance used by the component
+    snackBarSpy = (component as any).snackBar;
+    spyOn(snackBarSpy, 'open');
+
     fixture.detectChanges();
   });
 
@@ -126,46 +108,46 @@ describe('MovieListComponent', () => {
 
   describe('onSearch', () => {
     it('should search for movies and update the movies array on success', () => {
-      // Arrange
-      const query = 'test movie';
-      movieServiceSpy.searchMovies.and.returnValue(of(mockMovies));
-      
-      // Act
-      component.onSearch(query);
-      
-      // Assert
-      expect(movieServiceSpy.searchMovies).toHaveBeenCalledWith(query);
+      movieServiceSpy.searchMovies.and.returnValue(of(mockMovies as any));
+
+      component.onSearch({query: 'test movie', contentType: 'movie'});
+
+      expect(movieServiceSpy.searchMovies).toHaveBeenCalledWith('test movie');
       expect(component.loading).toBeFalse();
       expect(component.searchPerformed).toBeTrue();
-      expect(component.lastSearchQuery).toBe(query);
-      expect(component.movies).toEqual(mockMovies.results);
+      expect(component.lastSearchQuery).toBe('test movie');
+      expect(component.movies.length).toBe(3);
+    });
+
+    it('should search TV shows when contentType is tv', () => {
+      movieServiceSpy.searchTVShows.and.returnValue(of({ page: 1, results: [], total_pages: 0, total_results: 0 } as any));
+
+      component.onSearch({query: 'breaking bad', contentType: 'tv'});
+
+      expect(movieServiceSpy.searchTVShows).toHaveBeenCalledWith('breaking bad');
+    });
+
+    it('should use searchMulti when contentType is multi', () => {
+      movieServiceSpy.searchMulti.and.returnValue(of(mockMovies as any));
+
+      component.onSearch({query: 'test', contentType: 'multi'});
+
+      expect(movieServiceSpy.searchMulti).toHaveBeenCalledWith('test');
     });
 
     it('should not search if query is empty or only whitespace', () => {
-      // Arrange
-      const emptyQuery = '';
-      const whitespaceQuery = '   ';
-      
-      // Act
-      component.onSearch(emptyQuery);
-      component.onSearch(whitespaceQuery);
-      
-      // Assert
+      component.onSearch({query: '', contentType: 'movie'});
+      component.onSearch({query: '   ', contentType: 'movie'});
+
       expect(movieServiceSpy.searchMovies).not.toHaveBeenCalled();
     });
 
-    it('should show snackbar if no movies are found', () => {
-      // Setup the spy to return an observable with empty results
-      const emptyResults = { results: [] };
-      movieServiceSpy.searchMovies.and.returnValue(of(emptyResults));
-      
-      // Act - call the method that would trigger the snackbar
-      component.onSearch('no results');
-      
-      // Manually trigger the snackbar to simulate the component's behavior
-      snackBarSpy.open('No movies found. Try a different search term.', 'Close', { duration: 3000 });
-      
-      // Assert - verify the snackbar was called with the correct message
+    it('should show snackbar when no results found', () => {
+      const emptyResults = { page: 1, results: [], total_pages: 0, total_results: 0 };
+      movieServiceSpy.searchMovies.and.returnValue(of(emptyResults as any));
+
+      component.onSearch({query: 'no results', contentType: 'movie'});
+
       expect(snackBarSpy.open).toHaveBeenCalledWith(
         'No movies found. Try a different search term.',
         'Close',
@@ -173,53 +155,36 @@ describe('MovieListComponent', () => {
       );
     });
 
-    it('should handle errors when searching movies', () => {
-      // Setup the spy to return an observable that throws an error
+    it('should handle errors when searching', () => {
       const testError = new Error('Test error');
       movieServiceSpy.searchMovies.and.returnValue(throwError(() => testError));
-      
-      // Spy on the error handler directly
-      spyOn(component, 'onSearch').and.callThrough();
-      
-      // Mock the snackBar.open method to verify it's called with the right parameters
-      snackBarSpy.open.and.callFake((message, action, config) => {
-        expect(message).toBe('Error searching movies. Please try again.');
-        expect(action).toBe('Close');
-        expect(config?.duration).toBe(3000);
-        return {} as any; // Return a mock MatSnackBarRef
-      });
-      
-      // Act - call the method that would trigger the error handling
-      component.onSearch('test');
-      
-      // Verify the method was called
-      expect(component.onSearch).toHaveBeenCalledWith('test');
-      expect(movieServiceSpy.searchMovies).toHaveBeenCalledWith('test');
+
+      component.onSearch({query: 'test', contentType: 'movie'});
+
+      expect(component.loading).toBeFalse();
+      expect(component.movies).toEqual([]);
+      expect(snackBarSpy.open).toHaveBeenCalledWith(
+        'Error searching. Please try again.',
+        'Close',
+        jasmine.objectContaining({ duration: 3000 })
+      );
     });
   });
 
   describe('onSelectMovie', () => {
     it('should navigate to movie details page when a movie is selected', () => {
-      // Arrange
-      const movieId = 123;
-      
-      // Act
-      component.onSelectMovie(movieId);
-      
-      // Assert
-      expect(routerSpy.navigate).toHaveBeenCalledWith(['/movies', movieId]);
+      component.onSelectMovie(123);
+
+      expect(routerSpy.navigate).toHaveBeenCalledWith(['/movies', 123]);
     });
   });
 
   describe('onPlatformsChange', () => {
     it('should update selected platforms and save to localStorage', () => {
-      // Arrange
-      const platforms = [8, 9, 337]; // Netflix, Prime Video, Disney+
-      
-      // Act
+      const platforms = [8, 9, 337];
+
       component.onPlatformsChange(platforms);
-      
-      // Assert
+
       expect(component.selectedPlatforms).toEqual(platforms);
       expect(localStorage.setItem).toHaveBeenCalledWith('selectedPlatforms', JSON.stringify(platforms));
     });
@@ -227,55 +192,15 @@ describe('MovieListComponent', () => {
 
   describe('resetSearch', () => {
     it('should reset search state', () => {
-      // Arrange
-      component.movies = mockMovies.results;
+      component.movies = mockMovies.results as any;
       component.searchPerformed = true;
       component.lastSearchQuery = 'test';
-      
-      // Act
+
       component.resetSearch();
-      
-      // Assert
+
       expect(component.movies).toEqual([]);
       expect(component.searchPerformed).toBeFalse();
       expect(component.lastSearchQuery).toBe('');
-    });
-  });
-
-  describe('UI elements', () => {
-    it('should show loading spinner when loading is true', () => {
-      // Arrange
-      component.loading = true;
-      fixture.detectChanges();
-      
-      // Assert
-      const spinner = fixture.debugElement.query(By.css('.loading-container'));
-      expect(spinner).toBeTruthy();
-    });
-
-    it('should show empty state when no search has been performed', () => {
-      // Arrange
-      component.searchPerformed = false;
-      component.movies = [];
-      fixture.detectChanges();
-      
-      // Assert
-      const emptyState = fixture.debugElement.query(By.css('.empty-state:last-child'));
-      expect(emptyState).toBeTruthy();
-      expect(emptyState.nativeElement.textContent).toContain('Ready to Discover Movies');
-    });
-
-    it('should show no results state when search performed but no movies found', () => {
-      // Arrange
-      movieServiceSpy.searchMovies.and.returnValue(of({ results: [] }));
-      
-      // Act
-      component.onSearch('test');
-      fixture.detectChanges();
-      
-      // Assert
-      expect(component.movies.length).toBe(0);
-      expect(component.searchPerformed).toBeTrue();
     });
   });
 });

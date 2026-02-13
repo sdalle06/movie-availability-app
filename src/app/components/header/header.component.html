@@ -1,7 +1,7 @@
 <header class="app-header">
   <mat-toolbar>
     <div class="toolbar-content">
-      <div class="logo-container" routerLink="/">
+      <a class="logo-container" routerLink="/" aria-label="Home">
         <div class="logo-wrapper">
           <mat-icon class="logo-icon">movie_filter</mat-icon>
         </div>
@@ -9,7 +9,7 @@
           <h1 class="title">{{ title }}</h1>
           <span class="subtitle">Find movies across streaming platforms</span>
         </div>
-      </div>
+      </a>
       
       <div class="nav-links">
         <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">

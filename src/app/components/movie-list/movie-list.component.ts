@@ -1,15 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { MovieService } from '../../services/movie.service';
 import { SearchComponent } from '../search/search.component';
 import { MovieCardComponent } from '../movie-card/movie-card.component';
 import { PlatformSelectorComponent } from '../platform-selector/platform-selector.component';
+import { SearchResultItem } from '../../models/tmdb.models';
 
 @Component({
   selector: 'app-movie-list',
@@ -28,11 +30,13 @@ import { PlatformSelectorComponent } from '../platform-selector/platform-selecto
   styleUrls: ['./movie-list.component.scss']
 })
 export class MovieListComponent implements OnInit {
-  movies: any[] = [];
+  movies: SearchResultItem[] = [];
   loading = false;
   selectedPlatforms: number[] = [];
   searchPerformed = false;
   lastSearchQuery = '';
+
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private movieService: MovieService,
@@ -46,13 +50,13 @@ export class MovieListComponent implements OnInit {
     if (!searchData.query.trim()) {
       return;
     }
-    
+
     this.loading = true;
     this.searchPerformed = true;
     this.lastSearchQuery = searchData.query;
-    
+
     let searchObservable;
-    
+
     switch (searchData.contentType) {
       case 'movie':
         searchObservable = this.movieService.searchMovies(searchData.query);
@@ -62,18 +66,17 @@ export class MovieListComponent implements OnInit {
         break;
       case 'multi':
       default:
-        searchObservable = this.movieService.multiSearch(searchData.query);
+        searchObservable = this.movieService.searchMulti(searchData.query);
         break;
     }
-    
-    searchObservable.subscribe({
-      next: (response: any) => {
-        this.movies = response.results;
-        console.log('Search results:', response.results);
-        console.log('First result:', response.results[0]);
+
+    searchObservable.pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: (response) => {
+        this.movies = response.results as SearchResultItem[];
         this.loading = false;
-        
-        // If results are available, scroll to them with a small delay
+
         if (this.movies.length > 0) {
           setTimeout(() => {
             const moviesSection = document.getElementById('movies-section');
@@ -82,20 +85,19 @@ export class MovieListComponent implements OnInit {
             }
           }, 200);
         }
-        
+
         if (this.movies.length === 0) {
-          const contentTypeText = searchData.contentType === 'movie' ? 'movies' : 
+          const contentTypeText = searchData.contentType === 'movie' ? 'movies' :
                                  searchData.contentType === 'tv' ? 'TV shows' : 'content';
           this.snackBar.open(`No ${contentTypeText} found. Try a different search term.`, 'Close', {
             duration: 3000
           });
         }
       },
-      error: (error: any) => {
-        console.error('Error searching:', error);
+      error: () => {
         this.loading = false;
         this.movies = [];
-        
+
         this.snackBar.open('Error searching. Please try again.', 'Close', {
           duration: 3000
         });
@@ -109,10 +111,9 @@ export class MovieListComponent implements OnInit {
 
   onPlatformsChange(platforms: number[]): void {
     this.selectedPlatforms = platforms;
-    // Save selected platforms to localStorage for sharing with other components
     localStorage.setItem('selectedPlatforms', JSON.stringify(platforms));
   }
-  
+
   resetSearch(): void {
     this.movies = [];
     this.searchPerformed = false;

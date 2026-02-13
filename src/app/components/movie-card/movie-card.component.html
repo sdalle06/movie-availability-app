@@ -3,7 +3,7 @@
     <img 
       mat-card-image 
       [src]="getFullPosterPath(movie.poster_path)" 
-      [alt]="movie.title" 
+      [alt]="contentTitle"
       class="movie-poster"
       [ngClass]="{'placeholder-poster': !movie.poster_path}"
       loading="lazy"

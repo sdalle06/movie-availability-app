@@ -19,7 +19,7 @@ describe('MovieService', () => {
   });
 
   afterEach(() => {
-    httpMock.verify(); // Verify that no unmatched requests are outstanding
+    httpMock.verify();
   });
 
   it('should be created', () => {
@@ -29,19 +29,66 @@ describe('MovieService', () => {
   describe('searchMovies', () => {
     it('should make a GET request to search movies', () => {
       const mockResponse = {
+        page: 1,
         results: [
           { id: 1, title: 'Test Movie 1' },
           { id: 2, title: 'Test Movie 2' }
-        ]
+        ],
+        total_pages: 1,
+        total_results: 2
       };
       const query = 'test';
 
       service.searchMovies(query).subscribe(response => {
-        expect(response).toEqual(mockResponse);
+        expect(response).toEqual(mockResponse as any);
       });
 
       const req = httpMock.expectOne(
         `${apiUrl}/search/movie?api_key=${apiKey}&query=${query}&include_adult=false`
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('searchTVShows', () => {
+    it('should make a GET request to search TV shows', () => {
+      const mockResponse = {
+        page: 1,
+        results: [{ id: 1, name: 'Test Show' }],
+        total_pages: 1,
+        total_results: 1
+      };
+      const query = 'test';
+
+      service.searchTVShows(query).subscribe(response => {
+        expect(response).toEqual(mockResponse as any);
+      });
+
+      const req = httpMock.expectOne(
+        `${apiUrl}/search/tv?api_key=${apiKey}&query=${query}&include_adult=false`
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('searchMulti', () => {
+    it('should make a GET request to multi search', () => {
+      const mockResponse = {
+        page: 1,
+        results: [{ id: 1, title: 'Test', media_type: 'movie' }],
+        total_pages: 1,
+        total_results: 1
+      };
+      const query = 'test';
+
+      service.searchMulti(query).subscribe(response => {
+        expect(response).toEqual(mockResponse as any);
+      });
+
+      const req = httpMock.expectOne(
+        `${apiUrl}/search/multi?api_key=${apiKey}&query=${query}&include_adult=false`
       );
       expect(req.request.method).toBe('GET');
       req.flush(mockResponse);
@@ -54,7 +101,7 @@ describe('MovieService', () => {
       const movieId = 123;
 
       service.getMovieDetails(movieId).subscribe(response => {
-        expect(response).toEqual(mockResponse);
+        expect(response).toEqual(mockResponse as any);
       });
 
       const req = httpMock.expectOne(
@@ -65,23 +112,65 @@ describe('MovieService', () => {
     });
   });
 
+  describe('getTVDetails', () => {
+    it('should make a GET request to fetch TV details', () => {
+      const mockResponse = { id: 456, name: 'Test Show', overview: 'Test overview' };
+      const tvId = 456;
+
+      service.getTVDetails(tvId).subscribe(response => {
+        expect(response).toEqual(mockResponse as any);
+      });
+
+      const req = httpMock.expectOne(
+        `${apiUrl}/tv/${tvId}?api_key=${apiKey}`
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(mockResponse);
+    });
+  });
+
   describe('getMovieWatchProviders', () => {
     it('should make a GET request to fetch movie watch providers', () => {
       const mockResponse = {
+        id: 123,
         results: {
           US: {
-            flatrate: [{ provider_id: 8, provider_name: 'Netflix' }]
+            flatrate: [{ provider_id: 8, provider_name: 'Netflix', logo_path: '/logo.jpg' }]
           }
         }
       };
       const movieId = 123;
 
       service.getMovieWatchProviders(movieId).subscribe(response => {
-        expect(response).toEqual(mockResponse);
+        expect(response).toEqual(mockResponse as any);
       });
 
       const req = httpMock.expectOne(
         `${apiUrl}/movie/${movieId}/watch/providers?api_key=${apiKey}`
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('getTVWatchProviders', () => {
+    it('should make a GET request to fetch TV watch providers', () => {
+      const mockResponse = {
+        id: 456,
+        results: {
+          FR: {
+            flatrate: [{ provider_id: 337, provider_name: 'Disney+', logo_path: '/disney.jpg' }]
+          }
+        }
+      };
+      const tvId = 456;
+
+      service.getTVWatchProviders(tvId).subscribe(response => {
+        expect(response).toEqual(mockResponse as any);
+      });
+
+      const req = httpMock.expectOne(
+        `${apiUrl}/tv/${tvId}/watch/providers?api_key=${apiKey}`
       );
       expect(req.request.method).toBe('GET');
       req.flush(mockResponse);
@@ -96,7 +185,7 @@ describe('MovieService', () => {
       ];
 
       service.getCountries().subscribe(response => {
-        expect(response).toEqual(mockResponse);
+        expect(response).toEqual(mockResponse as any);
       });
 
       const req = httpMock.expectOne(
@@ -107,17 +196,16 @@ describe('MovieService', () => {
     });
   });
 
-  describe('getWatchProviders', () => {
-    it('should make a GET request to fetch watch providers with default region', () => {
+  describe('getWatchProvidersByRegion', () => {
+    it('should make a GET request with default region US', () => {
       const mockResponse = {
         results: [
-          { provider_id: 8, provider_name: 'Netflix' },
-          { provider_id: 9, provider_name: 'Amazon Prime' }
+          { provider_id: 8, provider_name: 'Netflix', logo_path: '/netflix.jpg' }
         ]
       };
 
-      service.getWatchProviders().subscribe(response => {
-        expect(response).toEqual(mockResponse);
+      service.getWatchProvidersByRegion().subscribe(response => {
+        expect(response).toEqual(mockResponse as any);
       });
 
       const req = httpMock.expectOne(
@@ -127,17 +215,16 @@ describe('MovieService', () => {
       req.flush(mockResponse);
     });
 
-    it('should make a GET request to fetch watch providers with specified region', () => {
+    it('should make a GET request with specified region', () => {
       const mockResponse = {
         results: [
-          { provider_id: 8, provider_name: 'Netflix' },
-          { provider_id: 9, provider_name: 'Amazon Prime' }
+          { provider_id: 8, provider_name: 'Netflix', logo_path: '/netflix.jpg' }
         ]
       };
       const region = 'FR';
 
-      service.getWatchProviders(region).subscribe(response => {
-        expect(response).toEqual(mockResponse);
+      service.getWatchProvidersByRegion(region).subscribe(response => {
+        expect(response).toEqual(mockResponse as any);
       });
 
       const req = httpMock.expectOne(
@@ -148,22 +235,20 @@ describe('MovieService', () => {
     });
   });
 
-  describe('getWatchProvidersByRegion', () => {
-    it('should make a GET request to fetch watch providers by region', () => {
+  describe('getTVWatchProvidersByRegion', () => {
+    it('should make a GET request with default region US', () => {
       const mockResponse = {
         results: [
-          { provider_id: 8, provider_name: 'Netflix' },
-          { provider_id: 9, provider_name: 'Amazon Prime' }
+          { provider_id: 8, provider_name: 'Netflix', logo_path: '/netflix.jpg' }
         ]
       };
-      const region = 'FR';
 
-      service.getWatchProvidersByRegion(region).subscribe(response => {
-        expect(response).toEqual(mockResponse);
+      service.getTVWatchProvidersByRegion().subscribe(response => {
+        expect(response).toEqual(mockResponse as any);
       });
 
       const req = httpMock.expectOne(
-        `${apiUrl}/watch/providers/movie?api_key=${apiKey}&watch_region=${region}`
+        `${apiUrl}/watch/providers/tv?api_key=${apiKey}&watch_region=US`
       );
       expect(req.request.method).toBe('GET');
       req.flush(mockResponse);

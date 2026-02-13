@@ -3,45 +3,45 @@
   <button mat-button color="primary" (click)="goBack()" class="back-button">
     <mat-icon>arrow_back</mat-icon> Back to Search
   </button>
-  
+
   <!-- Movie backdrop -->
   <div *ngIf="movie.backdrop_path" class="backdrop-container">
     <div class="backdrop" [style.background-image]="'url(' + getFullBackdropPath(movie.backdrop_path) + ')'">
       <div class="backdrop-overlay">
         <div class="movie-title-container">
           <h1 class="movie-title">{{ contentTitle }}</h1>
-          <p *ngIf="movie.tagline" class="movie-tagline">{{ movie.tagline }}</p>
+          <p *ngIf="$any(movie).tagline" class="movie-tagline">{{ $any(movie).tagline }}</p>
         </div>
       </div>
     </div>
   </div>
-  
+
   <!-- Movie details -->
   <div class="movie-details-grid">
     <!-- Left column: Poster and basic info -->
     <div class="poster-column">
       <mat-card [ngClass]="{'france-available': isAvailableInFrance}">
         <div class="poster-container">
-          <img 
-            [src]="getFullPosterPath(movie.poster_path)" 
-            [alt]="movie.title" 
+          <img
+            [src]="getFullPosterPath(movie.poster_path)"
+            [alt]="contentTitle"
             class="movie-poster">
-          
+
           <div class="france-badge" *ngIf="isAvailableInFrance">
             <span class="france-flag">{{ getFranceFlag() }}</span>
             <span class="france-text">Available in France</span>
           </div>
         </div>
-        
+
         <mat-card-content>
-          <div class="info-item" *ngIf="movie.runtime || movie.episode_run_time">
+          <div class="info-item" *ngIf="$any(movie).runtime || $any(movie).episode_run_time">
             <mat-icon>schedule</mat-icon>
-            <span *ngIf="isMovie">{{ movie.runtime }} minutes</span>
-            <span *ngIf="isTVShow && movie.episode_run_time?.length">{{ movie.episode_run_time[0] }} min/episode</span>
+            <span *ngIf="isMovie">{{ $any(movie).runtime }} minutes</span>
+            <span *ngIf="isTVShow && $any(movie).episode_run_time?.length">{{ $any(movie).episode_run_time[0] }} min/episode</span>
           </div>
           <div class="info-item">
             <mat-icon class="info-icon star-icon">star</mat-icon>
-            <span class="info-text">{{ movie.vote_average?.toFixed(1) }} / 10</span>
+            <span class="info-text">{{ movie.vote_average.toFixed(1) }} / 10</span>
             <span class="info-subtext">({{ movie.vote_count }} votes)</span>
           </div>
           <div class="info-item" *ngIf="contentReleaseDate">
@@ -52,14 +52,14 @@
             <mat-icon>{{ isTVShow ? 'tv' : 'movie' }}</mat-icon>
             <span>{{ isTVShow ? 'TV Show' : 'Movie' }}</span>
           </div>
-          <div *ngIf="movie.runtime" class="info-item">
+          <div *ngIf="$any(movie).runtime" class="info-item">
             <mat-icon class="info-icon">access_time</mat-icon>
-            <span class="info-text">{{ formatRuntime(movie.runtime) }}</span>
+            <span class="info-text">{{ formatRuntime($any(movie).runtime) }}</span>
           </div>
           <mat-divider class="divider"></mat-divider>
-          <div class="info-item" *ngIf="isTVShow && movie.number_of_seasons">
+          <div class="info-item" *ngIf="isTVShow && $any(movie).number_of_seasons">
             <mat-icon>tv</mat-icon>
-            <span>{{ movie.number_of_seasons }} Season{{ movie.number_of_seasons > 1 ? 's' : '' }}</span>
+            <span>{{ $any(movie).number_of_seasons }} Season{{ $any(movie).number_of_seasons > 1 ? 's' : '' }}</span>
           </div>
           <div *ngIf="movie.genres && movie.genres.length > 0" class="genres-container">
             <h3 class="section-title">Genres</h3>
@@ -74,7 +74,7 @@
         </mat-card-content>
       </mat-card>
     </div>
-    
+
     <!-- Right column: Overview and availability -->
     <div class="details-column">
       <!-- Overview -->
@@ -86,7 +86,7 @@
           <p class="overview-text">{{ movie.overview || 'No overview available.' }}</p>
         </mat-card-content>
       </mat-card>
-      
+
       <!-- Availability -->
       <mat-card class="availability-card" [ngClass]="{'france-available': isAvailableInFrance}">
         <mat-card-header>
@@ -98,36 +98,41 @@
           </mat-card-title>
         </mat-card-header>
         <mat-card-content>
+          <!-- Watch providers error -->
+          <div *ngIf="watchProvidersError" class="message-container">
+            <p class="message">Failed to load availability data. Platform information may be incomplete.</p>
+          </div>
+
           <!-- No platforms selected -->
-          <div *ngIf="selectedPlatforms.length === 0" class="message-container">
+          <div *ngIf="!watchProvidersError && selectedPlatforms.length === 0" class="message-container">
             <p class="message">Please select your streaming platforms on the search page to see availability.</p>
           </div>
-          
+
           <!-- No availability -->
           <div *ngIf="selectedPlatforms.length > 0 && availablePlatforms.length === 0" class="message-container">
             <p class="message">This movie is not available on any of your selected platforms in any country.</p>
           </div>
-          
+
           <!-- Show availability by platform -->
           <div *ngIf="availablePlatforms.length > 0" class="platforms-container">
             <h3 class="section-title">Available on these platforms:</h3>
-            
+
             <mat-list>
               <mat-list-item *ngFor="let platform of availablePlatforms" class="platform-item">
                 <div class="platform-info">
-                  <img 
-                    [src]="'https://image.tmdb.org/t/p/original' + platform.logoPath" 
+                  <img
+                    [src]="'https://image.tmdb.org/t/p/original' + platform.logoPath"
                     [alt]="platform.platformName"
                     class="platform-logo">
                   <span class="platform-name">{{ platform.platformName }}</span>
                 </div>
-                
+
                 <div class="countries-list">
                   <h4 class="countries-title">Available in {{ platform.countries.length }} {{ platform.countries.length === 1 ? 'country' : 'countries' }}:</h4>
                   <div class="country-chips">
                     <mat-chip-set>
-                      <mat-chip *ngFor="let country of platform.countries" 
-                                class="country-chip" 
+                      <mat-chip *ngFor="let country of platform.countries"
+                                class="country-chip"
                                 [ngClass]="{
                                   'france-country': country.countryCode === 'FR',
                                   'us-country': country.countryCode === 'US',

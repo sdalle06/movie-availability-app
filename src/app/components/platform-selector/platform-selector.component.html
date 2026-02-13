@@ -14,10 +14,16 @@
 <div *ngIf="!loading && !error">
   <div class="platforms-grid">
     <div *ngFor="let provider of providers" class="platform-item">
-      <mat-card 
-        class="platform-card" 
+      <mat-card
+        class="platform-card"
         [class.selected]="isPlatformSelected(provider.provider_id)"
         (click)="togglePlatform(provider.provider_id)"
+        (keydown.enter)="togglePlatform(provider.provider_id)"
+        (keydown.space)="$event.preventDefault(); togglePlatform(provider.provider_id)"
+        tabindex="0"
+        role="checkbox"
+        [attr.aria-checked]="isPlatformSelected(provider.provider_id)"
+        [attr.aria-label]="provider.provider_name"
       >
         <div class="platform-logo-container">
           <img 

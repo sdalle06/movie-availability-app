@@ -1,8 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
+import {
+  PaginatedResponse,
+  Movie,
+  TVShow,
+  SearchResultItem,
+  WatchProviderResponse,
+  WatchProviderListResponse,
+  Country
+} from '../models/tmdb.models';
 
 @Injectable({
   providedIn: 'root'
@@ -13,13 +21,8 @@ export class MovieService {
 
   constructor(private http: HttpClient) { }
 
-  /**
-   * Search for movies by query
-   * @param query Search query
-   * @returns Observable of search results
-   */
-  searchMovies(query: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/search/movie`, {
+  searchMovies(query: string): Observable<PaginatedResponse<Movie>> {
+    return this.http.get<PaginatedResponse<Movie>>(`${this.apiUrl}/search/movie`, {
       params: {
         api_key: this.apiKey,
         query: query,
@@ -28,13 +31,8 @@ export class MovieService {
     });
   }
 
-  /**
-   * Search for TV shows by query
-   * @param query Search query
-   * @returns Observable of search results
-   */
-  searchTVShows(query: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/search/tv`, {
+  searchTVShows(query: string): Observable<PaginatedResponse<TVShow>> {
+    return this.http.get<PaginatedResponse<TVShow>>(`${this.apiUrl}/search/tv`, {
       params: {
         api_key: this.apiKey,
         query: query,
@@ -43,13 +41,8 @@ export class MovieService {
     });
   }
 
-  /**
-   * Search for both movies and TV shows
-   * @param query Search query
-   * @returns Observable of combined search results
-   */
-  searchMulti(query: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/search/multi`, {
+  searchMulti(query: string): Observable<PaginatedResponse<SearchResultItem>> {
+    return this.http.get<PaginatedResponse<SearchResultItem>>(`${this.apiUrl}/search/multi`, {
       params: {
         api_key: this.apiKey,
         query: query,
@@ -58,164 +51,57 @@ export class MovieService {
     });
   }
 
-  /**
-   * Get movie details by ID
-   * @param movieId Movie ID
-   * @returns Observable of movie details
-   */
-  getMovieDetails(movieId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/movie/${movieId}`, {
+  getMovieDetails(movieId: number): Observable<Movie> {
+    return this.http.get<Movie>(`${this.apiUrl}/movie/${movieId}`, {
       params: {
         api_key: this.apiKey
       }
     });
   }
 
-  /**
-   * Get TV show details by ID
-   * @param tvId TV show ID
-   * @returns Observable of TV show details
-   */
-  getTVDetails(tvId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/tv/${tvId}`, {
+  getTVDetails(tvId: number): Observable<TVShow> {
+    return this.http.get<TVShow>(`${this.apiUrl}/tv/${tvId}`, {
       params: {
         api_key: this.apiKey
       }
     });
   }
 
-  /**
-   * Get movie watch providers by ID and region
-   * @param movieId Movie ID
-   * @returns Observable of watch providers
-   */
-  getMovieWatchProviders(movieId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/movie/${movieId}/watch/providers`, {
+  getMovieWatchProviders(movieId: number): Observable<WatchProviderResponse> {
+    return this.http.get<WatchProviderResponse>(`${this.apiUrl}/movie/${movieId}/watch/providers`, {
       params: {
         api_key: this.apiKey
       }
     });
   }
 
-  /**
-   * Multi-search for movies and TV shows
-   * @param query Search query
-   * @returns Observable of search results
-   */
-  multiSearch(query: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/search/multi`, {
-      params: {
-        api_key: this.apiKey,
-        query: query,
-        include_adult: 'false'
-      }
-    });
-  }
-
-  /**
-   * Get TV show watch providers by ID and region
-   * @param tvId TV show ID
-   * @returns Observable of watch providers
-   */
-  getTVWatchProviders(tvId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/tv/${tvId}/watch/providers`, {
+  getTVWatchProviders(tvId: number): Observable<WatchProviderResponse> {
+    return this.http.get<WatchProviderResponse>(`${this.apiUrl}/tv/${tvId}/watch/providers`, {
       params: {
         api_key: this.apiKey
       }
     });
   }
 
-  /**
-   * Get list of countries
-   * @returns Observable of countries
-   */
-  getCountries(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/configuration/countries`, {
+  getCountries(): Observable<Country[]> {
+    return this.http.get<Country[]>(`${this.apiUrl}/configuration/countries`, {
       params: {
         api_key: this.apiKey
       }
     });
   }
 
-  /**
-   * Get list of watch providers
-   * @param region Region code (e.g., 'US')
-   * @returns Observable of watch providers
-   */
-  getWatchProviders(region: string = 'US'): Observable<any> {
-    return this.http.get(`${this.apiUrl}/watch/providers/movie`, {
-      params: {
-        api_key: this.apiKey,
-        watch_region: region
-      }
-    }).pipe(
-      tap((response: any) => {
-        console.log(`TMDB API Response - All Providers (${region}):`, response);
-        if (response && response.results) {
-          // Log providers with 'Prime' in their name
-          const primeProviders = response.results.filter((p: any) => 
-            p.provider_name.includes('Prime') || p.provider_id === 9 || p.provider_id === 119
-          );
-          console.log(`Prime Video related providers in global list (${region}):`, 
-            primeProviders.map((p: any) => `${p.provider_name} (ID: ${p.provider_id})`))
-        }
-      })
-    );
-  }
-
-  /**
-   * Get TV watch providers
-   * @param region Region code (e.g., 'US')
-   * @returns Observable of TV watch providers
-   */
-  getTVWatchProvidersForRegion(region: string = 'US'): Observable<any> {
-    return this.http.get(`${this.apiUrl}/watch/providers/tv`, {
+  getWatchProvidersByRegion(region: string = 'US'): Observable<WatchProviderListResponse> {
+    return this.http.get<WatchProviderListResponse>(`${this.apiUrl}/watch/providers/movie`, {
       params: {
         api_key: this.apiKey,
         watch_region: region
       }
     });
   }
-  
-  /**
-   * Get list of watch providers by region
-   * @param region Region code (e.g., 'FR' for France)
-   * @returns Observable of watch providers available in the specified region
-   */
-  getWatchProvidersByRegion(region: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/watch/providers/movie`, {
-      params: {
-        api_key: this.apiKey,
-        watch_region: region
-      }
-    }).pipe(
-      tap((response: any) => {
-        console.log(`TMDB API Response - Region Providers (${region}):`, response);
-        if (response && response.results) {
-          // Log all providers in this region
-          console.log(`All providers in ${region}:`, 
-            response.results.map((p: any) => `${p.provider_name} (ID: ${p.provider_id})`));
-          
-          // Log providers with 'Prime' in their name
-          const primeProviders = response.results.filter((p: any) => 
-            p.provider_name.includes('Prime') || p.provider_id === 9 || p.provider_id === 119
-          );
-          console.log(`Prime Video related providers in ${region}:`, 
-            primeProviders.length > 0 ? 
-              primeProviders.map((p: any) => `${p.provider_name} (ID: ${p.provider_id})`) : 
-              'None found')
-        }
-      })
-    );
-  }
 
-  /**
-   * Get TV watch providers by region
-   * @param region Region code (e.g., 'FR' for France)
-   * @returns Observable of TV watch providers available in the specified region
-   */
-  getTVWatchProvidersByRegion(region: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/watch/providers/tv`, {
+  getTVWatchProvidersByRegion(region: string = 'US'): Observable<WatchProviderListResponse> {
+    return this.http.get<WatchProviderListResponse>(`${this.apiUrl}/watch/providers/tv`, {
       params: {
         api_key: this.apiKey,
         watch_region: region
