@@ -2,22 +2,22 @@
   <div class="main-content">
     <div class="search-section">
       <div class="search-container">
-        <app-search (search)="onSearch($event)"></app-search>
+        <app-search (search)="onSearch($event)" [initialQuery]="lastSearchQuery" [initialContentType]="lastContentType"></app-search>
       </div>
     </div>
-    
+
     <div class="platforms-section">
-      <app-platform-selector 
-        (platformsChange)="onPlatformsChange($event)" 
+      <app-platform-selector
+        (platformsChange)="onPlatformsChange($event)"
         [selectedPlatforms]="selectedPlatforms">
       </app-platform-selector>
     </div>
-    
+
     <div id="loading-section" *ngIf="loading" class="loading-container slide-up">
       <mat-spinner diameter="60" color="accent"></mat-spinner>
       <p class="loading-text">Searching...</p>
     </div>
-    
+
     <div id="movies-section" *ngIf="!loading && movies.length > 0" class="results-section slide-up">
       <div class="results-header">
         <div class="results-info">
@@ -25,16 +25,16 @@
           <p class="results-count">Found <span class="count-highlight">{{ movies.length }}</span> results</p>
         </div>
       </div>
-      
+
       <div class="movies-grid">
-        <app-movie-card 
-          *ngFor="let movie of movies" 
+        <app-movie-card
+          *ngFor="let movie of movies"
           [movie]="movie"
           [selectedPlatforms]="selectedPlatforms">
         </app-movie-card>
       </div>
     </div>
-    
+
     <div *ngIf="!loading && searchPerformed && movies.length === 0" class="empty-state slide-up">
       <div class="empty-state-content">
         <mat-icon class="empty-icon">search_off</mat-icon>
@@ -46,7 +46,7 @@
         </button>
       </div>
     </div>
-    
+
     <div *ngIf="!loading && !searchPerformed && movies.length === 0" class="empty-state slide-up">
       <div class="empty-state-content">
         <mat-icon class="empty-icon">movie_filter</mat-icon>

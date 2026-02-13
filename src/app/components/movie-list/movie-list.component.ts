@@ -35,6 +35,7 @@ export class MovieListComponent implements OnInit {
   selectedPlatforms: number[] = [];
   searchPerformed = false;
   lastSearchQuery = '';
+  lastContentType = 'multi';
 
   private destroyRef = inject(DestroyRef);
 
@@ -44,7 +45,34 @@ export class MovieListComponent implements OnInit {
     private snackBar: MatSnackBar
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.restoreSearchState();
+  }
+
+  private restoreSearchState(): void {
+    try {
+      const saved = sessionStorage.getItem('searchState');
+      if (saved) {
+        const state = JSON.parse(saved);
+        this.lastSearchQuery = state.query || '';
+        this.lastContentType = state.contentType || 'multi';
+        this.movies = state.results || [];
+        this.searchPerformed = state.searchPerformed || false;
+      }
+    } catch {
+      sessionStorage.removeItem('searchState');
+    }
+  }
+
+  private saveSearchState(): void {
+    const state = {
+      query: this.lastSearchQuery,
+      contentType: this.lastContentType,
+      results: this.movies,
+      searchPerformed: this.searchPerformed
+    };
+    sessionStorage.setItem('searchState', JSON.stringify(state));
+  }
 
   onSearch(searchData: {query: string, contentType: string}): void {
     if (!searchData.query.trim()) {
@@ -54,6 +82,7 @@ export class MovieListComponent implements OnInit {
     this.loading = true;
     this.searchPerformed = true;
     this.lastSearchQuery = searchData.query;
+    this.lastContentType = searchData.contentType;
 
     let searchObservable;
 
@@ -76,6 +105,7 @@ export class MovieListComponent implements OnInit {
       next: (response) => {
         this.movies = response.results as SearchResultItem[];
         this.loading = false;
+        this.saveSearchState();
 
         if (this.movies.length > 0) {
           setTimeout(() => {
@@ -118,5 +148,7 @@ export class MovieListComponent implements OnInit {
     this.movies = [];
     this.searchPerformed = false;
     this.lastSearchQuery = '';
+    this.lastContentType = 'multi';
+    sessionStorage.removeItem('searchState');
   }
 }

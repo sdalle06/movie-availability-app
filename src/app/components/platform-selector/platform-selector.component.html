@@ -40,9 +40,9 @@
   </div>
   
   <div class="platform-actions" *ngIf="providers.length > 0">
-    <div class="selected-count" *ngIf="selectedPlatforms.length > 0">
+    <div class="selected-count" *ngIf="visibleSelectedCount > 0">
       <mat-icon class="checkmark-icon">check_circle</mat-icon>
-      <span>{{ selectedPlatforms.length }} platform{{ selectedPlatforms.length === 1 ? '' : 's' }} selected</span>
+      <span>{{ visibleSelectedCount }} platform{{ visibleSelectedCount === 1 ? '' : 's' }} selected</span>
     </div>
     <button 
       mat-stroked-button 

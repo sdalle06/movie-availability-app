@@ -1,13 +1,17 @@
 <mat-card class="movie-card" [routerLink]="[isMovie ? '/movies' : '/tv', movie.id]" [ngClass]="{'france-available': isAvailableInFrance}">
   <div class="poster-container">
-    <img 
-      mat-card-image 
-      [src]="getFullPosterPath(movie.poster_path)" 
+    <img
+      *ngIf="movie.poster_path"
+      mat-card-image
+      [src]="getFullPosterPath(movie.poster_path)"
       [alt]="contentTitle"
       class="movie-poster"
-      [ngClass]="{'placeholder-poster': !movie.poster_path}"
       loading="lazy"
     >
+    <div *ngIf="!movie.poster_path" class="movie-poster placeholder-poster">
+      <mat-icon class="placeholder-icon">movie</mat-icon>
+      <span class="placeholder-title">{{ contentTitle }}</span>
+    </div>
     <div class="poster-overlay">
       <div class="overlay-content">
         <div class="movie-rating" *ngIf="movie.vote_average">

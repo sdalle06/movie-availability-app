@@ -61,7 +61,7 @@ mat-card-content {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%);
+  background: linear-gradient(to bottom, rgba(5, 8, 15, 0.1) 0%, rgba(5, 8, 15, 0.85) 100%);
   border-radius: 8px;
   display: flex;
   align-items: flex-end;
@@ -166,7 +166,7 @@ mat-card {
 }
 
 .star-icon {
-  color: gold;
+  color: #f59e0b;
 }
 
 .info-text {
@@ -224,12 +224,13 @@ mat-card {
   margin-bottom: 20px;
   color: var(--text-primary);
   background-color: var(--background-card);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+
   /* Disable any hover effects on cards */
   &:hover {
     transform: none !important;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
   }
   
   @media (max-width: 480px) {
@@ -271,7 +272,7 @@ mat-card {
   height: auto !important;
   margin-bottom: 20px;
   padding: 15px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   
   @media (max-width: 768px) {
     flex-direction: column;
@@ -378,7 +379,7 @@ mat-card {
   height: auto !important;
   margin-bottom: 15px;
   padding: 10px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .country-info {
@@ -436,8 +437,8 @@ mat-card {
   max-width: 500px;
   width: 100%;
   background-color: var(--background-card);
-  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.1);
-  border-left: 4px solid #f44336;
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.15);
+  border-left: 4px solid #ef4444;
 }
 
 .error-content {
@@ -454,7 +455,7 @@ mat-card {
 
 .error-icon {
   font-size: 48px;
-  color: #f44336;
+  color: #ef4444;
   margin-bottom: 16px;
   
   @media (max-width: 480px) {

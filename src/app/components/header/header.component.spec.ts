@@ -33,9 +33,9 @@ describe('HeaderComponent', () => {
   });
 
   it('should display the app title', () => {
-    expect(component.title).toBe('Movie Availability App');
+    expect(component.title).toBe('StreamRadar');
     const titleEl = fixture.debugElement.query(By.css('.title'));
-    expect(titleEl.nativeElement.textContent).toContain('Movie Availability App');
+    expect(titleEl.nativeElement.textContent).toContain('StreamRadar');
   });
 
   it('should have a home link with aria-label', () => {

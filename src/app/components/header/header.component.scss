@@ -30,34 +30,33 @@ mat-toolbar {
   transition: all 0.3s ease;
   
   &:hover {
-    transform: translateY(-2px);
-    
     .logo-wrapper {
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-      transform: rotate(10deg);
+      box-shadow: 0 0 20px rgba(124, 58, 237, 0.5), 0 0 40px rgba(6, 182, 212, 0.2);
+      transform: scale(1.05);
     }
   }
 }
 
 .logo-wrapper {
-  background: var(--accent-color);
-  width: 40px;
-  height: 40px;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  width: 42px;
+  height: 42px;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 16px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  margin-right: 14px;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
   transition: all 0.3s ease;
   transform: rotate(0deg);
 }
 
 .logo-icon {
-  font-size: 24px;
-  height: 24px;
-  width: 24px;
-  color: white;
+  font-size: 24px !important;
+  height: 24px !important;
+  width: 24px !important;
+  color: white !important;
+  overflow: visible;
 }
 
 .title-container {

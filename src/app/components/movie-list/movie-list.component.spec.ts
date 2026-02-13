@@ -18,6 +18,8 @@ import { PlatformSelectorComponent } from '../platform-selector/platform-selecto
 // Mock components
 @Component({ selector: 'app-search', template: '', standalone: true })
 class MockSearchComponent {
+  @Input() initialQuery = '';
+  @Input() initialContentType = 'multi';
   @Output() search = new EventEmitter<{query: string, contentType: string}>();
 }
 
@@ -91,6 +93,9 @@ describe('MovieListComponent', () => {
     routerSpy = TestBed.inject(Router) as jasmine.SpyObj<Router>;
 
     spyOn(localStorage, 'setItem');
+    spyOn(sessionStorage, 'getItem').and.returnValue(null);
+    spyOn(sessionStorage, 'setItem');
+    spyOn(sessionStorage, 'removeItem');
 
     fixture = TestBed.createComponent(MovieListComponent);
     component = fixture.componentInstance;

@@ -49,7 +49,6 @@ export class PlatformSelectorComponent implements OnInit {
     337,  // Disney+
     350,  // Apple TV+
     531,  // Paramount+
-    283,  // Crunchyroll
     1899, // Max
   ];
 
@@ -121,6 +120,14 @@ export class PlatformSelectorComponent implements OnInit {
         // By default, show only popular providers
         this.providers = this.showAllProviders ? this.allProviders : this.popularProviders;
 
+        // Clean up selectedPlatforms: remove any IDs not present in allProviders
+        const validIds = new Set(this.allProviders.map(p => p.provider_id));
+        const cleaned = this.selectedPlatforms.filter(id => validIds.has(id));
+        if (cleaned.length !== this.selectedPlatforms.length) {
+          this.selectedPlatforms = cleaned;
+          localStorage.setItem('selectedPlatforms', JSON.stringify(this.selectedPlatforms));
+        }
+
         this.loading = false;
 
         // Emit initial platforms after providers are loaded
@@ -151,6 +158,11 @@ export class PlatformSelectorComponent implements OnInit {
 
   isPlatformSelected(providerId: number): boolean {
     return this.selectedPlatforms.includes(providerId);
+  }
+
+  get visibleSelectedCount(): number {
+    const visibleIds = new Set(this.providers.map(p => p.provider_id));
+    return this.selectedPlatforms.filter(id => visibleIds.has(id)).length;
   }
 
   clearAll(): void {

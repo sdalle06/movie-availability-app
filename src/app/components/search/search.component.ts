@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
@@ -22,10 +22,28 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.scss']
 })
-export class SearchComponent {
+export class SearchComponent implements OnInit {
+  @Input() initialQuery = '';
+  @Input() initialContentType = 'multi';
   @Output() search = new EventEmitter<{query: string, contentType: string}>();
   searchControl = new FormControl('');
   contentTypeControl = new FormControl('multi');
+
+  ngOnInit(): void {
+    if (this.initialQuery) {
+      this.searchControl.setValue(this.initialQuery);
+    }
+    if (this.initialContentType) {
+      this.contentTypeControl.setValue(this.initialContentType);
+    }
+
+    // Re-trigger search when content type changes if there's already a query
+    this.contentTypeControl.valueChanges.subscribe(() => {
+      if (this.searchControl.value?.trim()) {
+        this.onSearch();
+      }
+    });
+  }
 
   onSearch(): void {
     const query = this.searchControl.value?.trim();

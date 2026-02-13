@@ -11,5 +11,5 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent {
-  title = 'Movie Availability App';
+  title = 'StreamRadar';
 }
