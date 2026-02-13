@@ -1,0 +1,252 @@
+.inspiration-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-lg) var(--spacing-md);
+}
+
+// Page header with toggle
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-xl);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.page-title {
+  font-family: 'Montserrat', 'Roboto', sans-serif;
+  font-weight: 700;
+  font-size: 28px;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.content-toggle {
+  border-radius: 8px;
+  overflow: hidden;
+
+  ::ng-deep .mat-button-toggle {
+    background: var(--background-card);
+    color: var(--text-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    .mat-button-toggle-label-content {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 16px;
+      line-height: 40px;
+      font-weight: 500;
+    }
+
+    mat-icon {
+      font-size: 18px;
+      height: 18px;
+      width: 18px;
+    }
+
+    &.mat-button-toggle-checked {
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+      color: white;
+      border-color: var(--primary-color);
+    }
+  }
+}
+
+// No platforms message
+.no-platforms {
+  text-align: center;
+  padding: 80px var(--spacing-md);
+  color: var(--text-secondary);
+
+  .no-platforms-icon {
+    font-size: 64px;
+    height: 64px;
+    width: 64px;
+    color: var(--primary-light);
+    opacity: 0.5;
+    margin-bottom: var(--spacing-md);
+  }
+
+  p {
+    font-size: 16px;
+    margin: 8px 0;
+  }
+
+  .link {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// Loading
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 80px 0;
+}
+
+// Error
+.error-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #ef4444;
+  padding: 40px 0;
+  font-size: 16px;
+
+  mat-icon {
+    font-size: 24px;
+    height: 24px;
+    width: 24px;
+  }
+}
+
+// Carousel sections
+.carousel-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.carousel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-sm);
+}
+
+.carousel-title {
+  font-family: 'Montserrat', 'Roboto', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  padding-left: 12px;
+  border-left: 3px solid var(--primary-color);
+}
+
+.see-more-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent-color);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+
+  .see-more-icon {
+    font-size: 18px;
+    height: 18px;
+    width: 18px;
+  }
+
+  &:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+  }
+}
+
+.carousel-wrapper {
+  position: relative;
+}
+
+.carousel-container {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: 8px 0 16px;
+
+  // Hide scrollbar
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.carousel-card {
+  flex: 0 0 180px;
+  scroll-snap-align: start;
+}
+
+// Scroll arrows
+.scroll-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(12, 16, 24, 0.85);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+
+  mat-icon {
+    font-size: 24px;
+    height: 24px;
+    width: 24px;
+  }
+
+  &:hover {
+    background: rgba(124, 58, 237, 0.6);
+    border-color: var(--primary-color);
+  }
+
+  &-left {
+    left: -4px;
+  }
+
+  &-right {
+    right: -4px;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .inspiration-page {
+    padding: var(--spacing-md) var(--spacing-sm);
+  }
+
+  .page-title {
+    font-size: 22px;
+  }
+
+  .carousel-title {
+    font-size: 17px;
+  }
+
+  .carousel-card {
+    flex: 0 0 150px;
+  }
+
+  .scroll-arrow {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .carousel-card {
+    flex: 0 0 140px;
+  }
+}

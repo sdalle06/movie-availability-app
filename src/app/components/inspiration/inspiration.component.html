@@ -1,0 +1,104 @@
+<div class="inspiration-page">
+  <div class="page-header">
+    <h2 class="page-title">Inspiration</h2>
+    <mat-button-toggle-group
+      [value]="contentType"
+      (change)="onContentTypeChange($event.value)"
+      class="content-toggle"
+    >
+      <mat-button-toggle value="movie">
+        <mat-icon>local_movies</mat-icon>
+        <span>Movies</span>
+      </mat-button-toggle>
+      <mat-button-toggle value="tv">
+        <mat-icon>live_tv</mat-icon>
+        <span>TV Shows</span>
+      </mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
+  <div *ngIf="!hasPlatforms" class="no-platforms">
+    <mat-icon class="no-platforms-icon">tune</mat-icon>
+    <p>No streaming platforms selected.</p>
+    <p>Select your platforms on the <a routerLink="/movies" class="link">Search page</a> to see what's available.</p>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="48"></mat-spinner>
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ error }}</span>
+  </div>
+
+  <div *ngIf="hasPlatforms && !loading && !error" class="content-sections">
+    <!-- Popular carousel -->
+    <section class="carousel-section" *ngIf="popularItems.length">
+      <div class="carousel-header">
+        <h3 class="carousel-title">Popular</h3>
+        <a class="see-more-link" [routerLink]="['/browse']" [queryParams]="{ sort: 'popularity.desc', type: contentType }">
+          See More <mat-icon class="see-more-icon">arrow_forward</mat-icon>
+        </a>
+      </div>
+      <div class="carousel-wrapper">
+        <button
+          class="scroll-arrow scroll-arrow-left"
+          (click)="scrollCarousel(0, 'left')"
+          aria-label="Scroll left"
+        >
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <div class="carousel-container" #carouselContainer>
+          <app-movie-card
+            *ngFor="let item of popularItems"
+            [movie]="item"
+            [selectedPlatforms]="selectedPlatforms"
+            class="carousel-card"
+          ></app-movie-card>
+        </div>
+        <button
+          class="scroll-arrow scroll-arrow-right"
+          (click)="scrollCarousel(0, 'right')"
+          aria-label="Scroll right"
+        >
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+    </section>
+
+    <!-- Recently Released carousel -->
+    <section class="carousel-section" *ngIf="recentItems.length">
+      <div class="carousel-header">
+        <h3 class="carousel-title">Recently Released</h3>
+        <a class="see-more-link" [routerLink]="['/browse']" [queryParams]="{ sort: 'popular_recent', type: contentType }">
+          See More <mat-icon class="see-more-icon">arrow_forward</mat-icon>
+        </a>
+      </div>
+      <div class="carousel-wrapper">
+        <button
+          class="scroll-arrow scroll-arrow-left"
+          (click)="scrollCarousel(1, 'left')"
+          aria-label="Scroll left"
+        >
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <div class="carousel-container" #carouselContainer>
+          <app-movie-card
+            *ngFor="let item of recentItems"
+            [movie]="item"
+            [selectedPlatforms]="selectedPlatforms"
+            class="carousel-card"
+          ></app-movie-card>
+        </div>
+        <button
+          class="scroll-arrow scroll-arrow-right"
+          (click)="scrollCarousel(1, 'right')"
+          aria-label="Scroll right"
+        >
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+    </section>
+  </div>
+</div>

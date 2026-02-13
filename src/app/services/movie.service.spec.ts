@@ -254,4 +254,57 @@ describe('MovieService', () => {
       req.flush(mockResponse);
     });
   });
+
+  describe('discover', () => {
+    it('should make a GET request with base params', () => {
+      const mockResponse = {
+        page: 1,
+        results: [{ id: 1, title: 'Test' }],
+        total_pages: 1,
+        total_results: 1
+      };
+
+      service.discover('movie', [8, 337], 'FR', 'popularity.desc').subscribe(response => {
+        expect(response).toEqual(mockResponse as any);
+      });
+
+      const req = httpMock.expectOne(r =>
+        r.url === `${apiUrl}/discover/movie` &&
+        r.params.get('api_key') === apiKey &&
+        r.params.get('with_watch_providers') === '8|337' &&
+        r.params.get('watch_region') === 'FR' &&
+        r.params.get('sort_by') === 'popularity.desc' &&
+        r.params.get('include_adult') === 'false'
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(mockResponse);
+    });
+
+    it('should include extra params when provided', () => {
+      const mockResponse = {
+        page: 1,
+        results: [],
+        total_pages: 0,
+        total_results: 0
+      };
+
+      service.discover('movie', [8], 'US', 'primary_release_date.desc', {
+        'primary_release_date.lte': '2024-06-01',
+        'vote_average.gte': '7',
+        page: '2'
+      }).subscribe(response => {
+        expect(response).toEqual(mockResponse as any);
+      });
+
+      const req = httpMock.expectOne(r =>
+        r.url === `${apiUrl}/discover/movie` &&
+        r.params.get('primary_release_date.lte') === '2024-06-01' &&
+        r.params.get('vote_average.gte') === '7' &&
+        r.params.get('page') === '2' &&
+        r.params.get('sort_by') === 'primary_release_date.desc'
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(mockResponse);
+    });
+  });
 });

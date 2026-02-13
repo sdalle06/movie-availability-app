@@ -108,4 +108,17 @@ export class MovieService {
       }
     });
   }
+
+  discover(type: 'movie' | 'tv', providerIds: number[], region: string, sortBy: string, extraParams?: Record<string, string>): Observable<PaginatedResponse<SearchResultItem>> {
+    return this.http.get<PaginatedResponse<SearchResultItem>>(`${this.apiUrl}/discover/${type}`, {
+      params: {
+        api_key: this.apiKey,
+        with_watch_providers: providerIds.join('|'),
+        watch_region: region,
+        sort_by: sortBy,
+        include_adult: 'false',
+        ...extraParams
+      }
+    });
+  }
 }
