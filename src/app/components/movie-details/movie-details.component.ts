@@ -17,23 +17,14 @@ import {
   TVShow,
   WatchProvider,
   CountryWatchProviders,
-  Country
+  Country,
+  PlatformAvailability
 } from '../../models/tmdb.models';
 
 interface CountryAvailability {
   countryCode: string;
   countryName: string;
   providers: WatchProvider[];
-}
-
-interface PlatformAvailability {
-  platformId: number;
-  platformName: string;
-  logoPath: string;
-  countries: {
-    countryCode: string;
-    countryName: string;
-  }[];
 }
 
 @Component({

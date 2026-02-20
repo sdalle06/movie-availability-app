@@ -73,3 +73,10 @@ export interface Country {
   english_name: string;
   native_name?: string;
 }
+
+export interface PlatformAvailability {
+  platformId: number;
+  platformName: string;
+  logoPath: string;
+  countries: { countryCode: string; countryName: string }[];
+}

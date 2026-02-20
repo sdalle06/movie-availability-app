@@ -23,35 +23,84 @@
     <p>Select your platforms on the <a routerLink="/movies" class="link">Search page</a> to see what's available.</p>
   </div>
 
-  <div *ngIf="loading" class="loading-container">
-    <mat-spinner diameter="48"></mat-spinner>
-  </div>
+  <div *ngIf="hasPlatforms" class="content-sections">
 
-  <div *ngIf="error" class="error-message">
-    <mat-icon>error_outline</mat-icon>
-    <span>{{ error }}</span>
-  </div>
-
-  <div *ngIf="hasPlatforms && !loading && !error" class="content-sections">
-    <!-- Popular carousel -->
-    <section class="carousel-section" *ngIf="popularItems.length">
-      <div class="carousel-header">
-        <h3 class="carousel-title">Popular</h3>
-        <a class="see-more-link" [routerLink]="['/browse']" [queryParams]="{ sort: 'popularity.desc', type: contentType }">
-          See More <mat-icon class="see-more-icon">arrow_forward</mat-icon>
-        </a>
+    <!-- Pick of the Day Hero -->
+    <section class="hero-section" *ngIf="pickOfDay">
+      <div
+        class="hero-backdrop"
+        [style.background-image]="getPickBackdrop() ? 'url(' + getPickBackdrop() + ')' : 'none'"
+        [class.no-backdrop]="!getPickBackdrop()"
+      >
+        <div class="hero-overlay">
+          <div class="hero-content">
+            <span class="hero-label">Pick of the Day</span>
+            <h3 class="hero-title">{{ getPickTitle() }}</h3>
+            <div class="hero-meta">
+              <span class="hero-rating" *ngIf="getPickRating()">
+                <mat-icon class="star-icon">star</mat-icon>
+                {{ getPickRating() | number:'1.1-1' }}
+              </span>
+              <span *ngIf="getPickYear()">{{ getPickYear() }}</span>
+              <span *ngIf="getPickRuntime()">{{ getPickRuntime() }}</span>
+              <span *ngIf="getPickGenres()" class="hero-genres">{{ getPickGenres() }}</span>
+            </div>
+            <p class="hero-overview" *ngIf="getPickOverview()">{{ getPickOverview() }}</p>
+            <div class="hero-availability" *ngIf="pickOfDay.platforms.length > 0">
+              <div class="platform-chip" *ngFor="let platform of pickOfDay.platforms" [title]="platform.platformName">
+                <img
+                  [src]="getProviderLogoUrl(platform.logoPath)"
+                  [alt]="platform.platformName"
+                  class="platform-logo"
+                >
+                <span class="platform-name">{{ platform.platformName }}</span>
+              </div>
+            </div>
+            <a class="hero-cta" [routerLink]="getPickDetailLink()">
+              View Details <mat-icon>arrow_forward</mat-icon>
+            </a>
+          </div>
+        </div>
       </div>
-      <div class="carousel-wrapper">
+    </section>
+    <div *ngIf="loadingPickOfDay" class="section-loading">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+
+    <!-- Mood Quick-Pick -->
+    <section class="carousel-section" *ngIf="!loadingMoods || selectedMoodItems.length">
+      <div class="carousel-header">
+        <h3 class="carousel-title">Mood Quick-Pick</h3>
+      </div>
+      <div class="mood-chips">
+        <button
+          *ngFor="let mood of moods"
+          class="mood-chip"
+          [class.active]="selectedMood === mood.key"
+          (click)="onMoodSelect(mood.key)"
+        >
+          <mat-icon>{{ mood.icon }}</mat-icon>
+          <span>{{ mood.label }}</span>
+        </button>
+      </div>
+      <div *ngIf="loadingMoods" class="section-loading">
+        <mat-spinner diameter="32"></mat-spinner>
+      </div>
+      <div *ngIf="errorMoods" class="section-error">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMoods }}</span>
+      </div>
+      <div class="carousel-wrapper" *ngIf="selectedMoodItems.length">
         <button
           class="scroll-arrow scroll-arrow-left"
-          (click)="scrollCarousel(0, 'left')"
+          (click)="scrollCarousel(moodCarousel, 'left')"
           aria-label="Scroll left"
         >
           <mat-icon>chevron_left</mat-icon>
         </button>
-        <div class="carousel-container" #carouselContainer>
+        <div class="carousel-container" #moodCarousel>
           <app-movie-card
-            *ngFor="let item of popularItems"
+            *ngFor="let item of selectedMoodItems"
             [movie]="item"
             [selectedPlatforms]="selectedPlatforms"
             class="carousel-card"
@@ -59,7 +108,7 @@
         </div>
         <button
           class="scroll-arrow scroll-arrow-right"
-          (click)="scrollCarousel(0, 'right')"
+          (click)="scrollCarousel(moodCarousel, 'right')"
           aria-label="Scroll right"
         >
           <mat-icon>chevron_right</mat-icon>
@@ -67,25 +116,32 @@
       </div>
     </section>
 
-    <!-- Recently Released carousel -->
-    <section class="carousel-section" *ngIf="recentItems.length">
+    <!-- Hidden Gems -->
+    <section class="carousel-section" *ngIf="!loadingHiddenGems || hiddenGems.length">
       <div class="carousel-header">
-        <h3 class="carousel-title">Recently Released</h3>
-        <a class="see-more-link" [routerLink]="['/browse']" [queryParams]="{ sort: 'popular_recent', type: contentType }">
+        <h3 class="carousel-title">Hidden Gems</h3>
+        <a class="see-more-link" [routerLink]="['/browse']" [queryParams]="getHiddenGemsBrowseParams()">
           See More <mat-icon class="see-more-icon">arrow_forward</mat-icon>
         </a>
       </div>
-      <div class="carousel-wrapper">
+      <div *ngIf="loadingHiddenGems" class="section-loading">
+        <mat-spinner diameter="32"></mat-spinner>
+      </div>
+      <div *ngIf="errorHiddenGems" class="section-error">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorHiddenGems }}</span>
+      </div>
+      <div class="carousel-wrapper" *ngIf="hiddenGems.length">
         <button
           class="scroll-arrow scroll-arrow-left"
-          (click)="scrollCarousel(1, 'left')"
+          (click)="scrollCarousel(gemsCarousel, 'left')"
           aria-label="Scroll left"
         >
           <mat-icon>chevron_left</mat-icon>
         </button>
-        <div class="carousel-container" #carouselContainer>
+        <div class="carousel-container" #gemsCarousel>
           <app-movie-card
-            *ngFor="let item of recentItems"
+            *ngFor="let item of hiddenGems"
             [movie]="item"
             [selectedPlatforms]="selectedPlatforms"
             class="carousel-card"
@@ -93,12 +149,103 @@
         </div>
         <button
           class="scroll-arrow scroll-arrow-right"
-          (click)="scrollCarousel(1, 'right')"
+          (click)="scrollCarousel(gemsCarousel, 'right')"
           aria-label="Scroll right"
         >
           <mat-icon>chevron_right</mat-icon>
         </button>
       </div>
     </section>
+
+    <!-- Genre of the Day -->
+    <section class="carousel-section">
+      <div class="carousel-header">
+        <h3 class="carousel-title">Genre of the Day</h3>
+      </div>
+      <div class="genre-chips">
+        <button
+          *ngFor="let genre of genres"
+          class="genre-chip"
+          [class.active]="selectedGenreId === genre.id"
+          [class.today]="genre.id === todayGenreId"
+          (click)="onGenreSelect(genre.id)"
+        >
+          {{ genre.name }}
+        </button>
+      </div>
+      <div *ngIf="loadingGenre" class="section-loading">
+        <mat-spinner diameter="32"></mat-spinner>
+      </div>
+      <div *ngIf="errorGenre" class="section-error">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorGenre }}</span>
+      </div>
+      <div class="carousel-wrapper" *ngIf="displayedGenreItems.length">
+        <button
+          class="scroll-arrow scroll-arrow-left"
+          (click)="scrollCarousel(genreCarousel, 'left')"
+          aria-label="Scroll left"
+        >
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <div class="carousel-container" #genreCarousel>
+          <app-movie-card
+            *ngFor="let item of displayedGenreItems"
+            [movie]="item"
+            [selectedPlatforms]="selectedPlatforms"
+            class="carousel-card"
+          ></app-movie-card>
+        </div>
+        <button
+          class="scroll-arrow scroll-arrow-right"
+          (click)="scrollCarousel(genreCarousel, 'right')"
+          aria-label="Scroll right"
+        >
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+    </section>
+
+    <!-- Trending Now -->
+    <section class="carousel-section" *ngIf="!loadingTrending || trendingItems.length">
+      <div class="carousel-header">
+        <h3 class="carousel-title">Trending Now</h3>
+        <a class="see-more-link" [routerLink]="['/browse']" [queryParams]="getTrendingBrowseParams()">
+          See More <mat-icon class="see-more-icon">arrow_forward</mat-icon>
+        </a>
+      </div>
+      <div *ngIf="loadingTrending" class="section-loading">
+        <mat-spinner diameter="32"></mat-spinner>
+      </div>
+      <div *ngIf="errorTrending" class="section-error">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorTrending }}</span>
+      </div>
+      <div class="carousel-wrapper" *ngIf="trendingItems.length">
+        <button
+          class="scroll-arrow scroll-arrow-left"
+          (click)="scrollCarousel(trendingCarousel, 'left')"
+          aria-label="Scroll left"
+        >
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <div class="carousel-container" #trendingCarousel>
+          <app-movie-card
+            *ngFor="let item of trendingItems"
+            [movie]="item"
+            [selectedPlatforms]="selectedPlatforms"
+            class="carousel-card"
+          ></app-movie-card>
+        </div>
+        <button
+          class="scroll-arrow scroll-arrow-right"
+          (click)="scrollCarousel(trendingCarousel, 'right')"
+          aria-label="Scroll right"
+        >
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+    </section>
+
   </div>
 </div>

@@ -69,6 +69,22 @@ Global styles in `src/styles.scss` with CSS custom properties. Fonts: Poppins (b
 
 Three files: `environment.ts` (base), `environment.development.ts`, `environment.prod.ts`. All contain `apiKey`, `apiUrl`, `imageBaseUrl`, `posterSize`, `backdropSize`.
 
+## Design Philosophy
+
+StreamRadar helps users answer "what should I watch tonight?" across their streaming platforms.
+
+- **Target user**: casual viewer in France/Europe with multiple streaming subscriptions
+- **Core value**: surface content users wouldn't find on their own
+- **Key differentiator**: cross-platform, cross-region availability — show what no single streaming app can
+- **UX principle**: don't replicate Netflix's homepage — provide unique cross-platform insights
+- **No user accounts**: all personalization is based on selected platforms (localStorage), not watch history
+
+### Page Roles
+
+- **Search** (`/movies`): direct lookup — user knows what they want
+- **Inspiration** (`/inspiration`): discovery — help users find something unexpected
+- **Browse** (`/browse`): exploration — structured filtering and sorting
+
 ## Deployment
 
 GitHub Actions workflow (`.github/workflows/deploy.yml`) auto-deploys to GitHub Pages on push to `main`. The build copies `index.html` to `404.html` for SPA routing support on GitHub Pages.

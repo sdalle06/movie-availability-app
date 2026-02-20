@@ -50,6 +50,12 @@ export class BrowseComponent implements OnInit {
   selectedPlatforms: number[] = [];
   items: SearchResultItem[] = [];
 
+  // Query param filters from Inspiration "See all" links
+  genre = '';
+  voteCountMin = '';
+  voteCountMax = '';
+  dateFrom = '';
+
   sortOptions: SortOption[] = [];
   ratingOptions = [
     { label: 'Any Rating', value: 0 },
@@ -77,6 +83,13 @@ export class BrowseComponent implements OnInit {
       if (params['sort']) {
         this.sortBy = params['sort'];
       }
+      if (params['min_rating']) {
+        this.minRating = Number(params['min_rating']) || 0;
+      }
+      this.genre = params['genre'] || '';
+      this.voteCountMin = params['vote_count_min'] || '';
+      this.voteCountMax = params['vote_count_max'] || '';
+      this.dateFrom = params['date_from'] || '';
       this.buildSortOptions();
       this.resetAndLoad();
     });
@@ -102,12 +115,25 @@ export class BrowseComponent implements OnInit {
 
   get pageTitle(): string {
     const typeLabel = this.contentType === 'movie' ? 'Movies' : 'TV Shows';
-    if (this.sortBy === 'popular_recent') return `Popular & Recent ${typeLabel}`;
-    if (this.sortBy.startsWith('popularity')) return `Popular ${typeLabel}`;
-    if (this.sortBy.startsWith('vote_average')) return `Highest Rated ${typeLabel}`;
-    if (this.sortBy.includes('release_date.desc') || this.sortBy.includes('air_date.desc')) return `Recently Released ${typeLabel}`;
-    if (this.sortBy.includes('release_date.asc') || this.sortBy.includes('air_date.asc')) return `Oldest ${typeLabel}`;
-    return `Browse ${typeLabel}`;
+    let prefix = '';
+    if (this.voteCountMax && this.sortBy.startsWith('vote_average')) {
+      prefix = 'Hidden Gem';
+    } else if (this.dateFrom && this.sortBy.startsWith('popularity')) {
+      prefix = 'Trending';
+    } else if (this.sortBy === 'popular_recent') {
+      prefix = 'Popular & Recent';
+    } else if (this.sortBy.startsWith('popularity')) {
+      prefix = 'Popular';
+    } else if (this.sortBy.startsWith('vote_average')) {
+      prefix = 'Highest Rated';
+    } else if (this.sortBy.includes('release_date.desc') || this.sortBy.includes('air_date.desc')) {
+      prefix = 'Recently Released';
+    } else if (this.sortBy.includes('release_date.asc') || this.sortBy.includes('air_date.asc')) {
+      prefix = 'Oldest';
+    } else {
+      prefix = 'Browse';
+    }
+    return `${prefix} ${typeLabel}`;
   }
 
   private get dateSortDesc(): string {
@@ -197,6 +223,23 @@ export class BrowseComponent implements OnInit {
       extraParams['vote_average.gte'] = String(this.minRating);
     }
 
+    if (this.genre) {
+      extraParams['with_genres'] = this.genre;
+    }
+    if (this.voteCountMin) {
+      extraParams['vote_count.gte'] = this.voteCountMin;
+    }
+    if (this.voteCountMax) {
+      extraParams['vote_count.lte'] = this.voteCountMax;
+    }
+    if (this.dateFrom) {
+      const dateGteParam = this.contentType === 'movie'
+        ? 'primary_release_date.gte' : 'first_air_date.gte';
+      if (!extraParams[dateGteParam]) {
+        extraParams[dateGteParam] = this.dateFrom;
+      }
+    }
+
     const calls = REGIONS.map(region =>
       this.movieService.discover(this.contentType, this.selectedPlatforms, region, apiSort, extraParams)
     );
@@ -239,18 +282,26 @@ export class BrowseComponent implements OnInit {
     this.loadPage();
   }
 
+  /**
+   * Round-robin merge: picks one item from each region in turn so that
+   * content from CA/US isn't drowned out by FR results.
+   */
   private mergeResults(regionArrays: SearchResultItem[][]): SearchResultItem[] {
     const seen = new Set<number>();
     const merged: SearchResultItem[] = [];
+    const indices = regionArrays.map(() => 0);
+    const maxLen = Math.max(...regionArrays.map(a => a.length));
 
-    for (const items of regionArrays) {
-      for (const item of items) {
-        if (!seen.has(item.id)) {
-          seen.add(item.id);
-          merged.push({ ...item, media_type: this.contentType } as SearchResultItem);
-        }
-        if (merged.length >= PAGE_SIZE) {
-          return merged;
+    for (let round = 0; round < maxLen && merged.length < PAGE_SIZE; round++) {
+      for (let r = 0; r < regionArrays.length && merged.length < PAGE_SIZE; r++) {
+        while (indices[r] < regionArrays[r].length) {
+          const item = regionArrays[r][indices[r]];
+          indices[r]++;
+          if (!seen.has(item.id)) {
+            seen.add(item.id);
+            merged.push({ ...item, media_type: this.contentType } as SearchResultItem);
+            break;
+          }
         }
       }
     }
