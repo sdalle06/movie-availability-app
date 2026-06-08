@@ -1,0 +1,65 @@
+<div class="page-container fade-in">
+  <div class="main-content">
+    <div class="watchlist-header">
+      <div>
+        <h2 class="section-title">My Watchlist</h2>
+        <p class="section-subtitle">
+          Titles you're tracking. We re-check availability on your selected platforms when you open this page.
+        </p>
+      </div>
+      <button *ngIf="items().length > 0" mat-stroked-button color="warn" (click)="clearAll()">
+        <mat-icon>delete_sweep</mat-icon>
+        Clear all
+      </button>
+    </div>
+
+    <div *ngIf="checking" class="checking-banner">
+      <mat-spinner diameter="20"></mat-spinner>
+      <span>Checking availability…</span>
+    </div>
+
+    <div *ngIf="items().length > 0; else emptyState" class="movies-grid">
+      <a
+        *ngFor="let item of items(); trackBy: trackById"
+        class="watch-card"
+        [class.now-available]="item.available"
+        [routerLink]="detailLink(item)">
+        <div class="poster-wrap">
+          <img [src]="getPosterPath(item.posterPath)" [alt]="item.title" class="poster" loading="lazy">
+          <span class="media-chip">{{ item.mediaType === 'tv' ? 'TV' : 'Movie' }}</span>
+          <button
+            mat-icon-button
+            class="remove-btn"
+            aria-label="Remove from watchlist"
+            (click)="remove(item, $event)">
+            <mat-icon>close</mat-icon>
+          </button>
+          <div class="availability-badge" [class.available]="item.available">
+            <mat-icon>{{ item.available ? 'check_circle' : 'notifications_active' }}</mat-icon>
+            <span>{{ item.available ? 'Now available' : 'Not yet — tracking' }}</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">{{ item.title }}</h3>
+        </div>
+      </a>
+    </div>
+
+    <ng-template #emptyState>
+      <div class="empty-state slide-up">
+        <div class="empty-state-content">
+          <mat-icon class="empty-icon">bookmark_border</mat-icon>
+          <h3 class="empty-title">Your watchlist is empty</h3>
+          <p class="empty-text">
+            Open a movie or show and add it to your watchlist. If it isn't streaming on your platforms yet,
+            we'll flag it here once it becomes available.
+          </p>
+          <button mat-raised-button color="accent" routerLink="/movies">
+            <mat-icon>search</mat-icon>
+            Find something to watch
+          </button>
+        </div>
+      </div>
+    </ng-template>
+  </div>
+</div>

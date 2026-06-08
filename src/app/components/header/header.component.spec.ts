@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -16,6 +17,7 @@ describe('HeaderComponent', () => {
       imports: [
         HeaderComponent,
         RouterTestingModule,
+        HttpClientTestingModule,
         MatToolbarModule,
         MatButtonModule,
         MatIconModule
@@ -42,6 +44,15 @@ describe('HeaderComponent', () => {
     const logoLink = fixture.debugElement.query(By.css('.logo-container'));
     expect(logoLink).toBeTruthy();
     expect(logoLink.nativeElement.getAttribute('aria-label')).toBe('Home');
+  });
+
+  it('should have a Watchlist nav link', () => {
+    const links = fixture.debugElement.queryAll(By.css('.nav-link'));
+    const watchlistLink = links.find(link =>
+      link.nativeElement.textContent.includes('Watchlist')
+    );
+    expect(watchlistLink).toBeTruthy();
+    expect(watchlistLink!.nativeElement.getAttribute('href')).toContain('/watchlist');
   });
 
   it('should have external link to TMDB', () => {

@@ -31,6 +31,7 @@ All routes use standalone components loaded eagerly:
 - `/movies` — search & results page (MovieListComponent)
 - `/movies/:id` — movie detail page (MovieDetailsComponent)
 - `/tv/:id` — TV show detail page (reuses MovieDetailsComponent)
+- `/watchlist` — saved titles with availability re-check (WatchlistComponent)
 - Root redirects to `/movies`, wildcard also redirects to `/movies`
 
 MovieDetailsComponent determines content type (movie vs TV) from the route segment.
@@ -46,20 +47,26 @@ Single `MovieService` handles all TMDB API calls. API key and base URL come from
 
 ### Components (`src/app/components/`)
 
-- **MovieListComponent** — main page orchestrating search, platform filtering, and result display
-- **MovieDetailsComponent** — detail view with watch provider availability organized by country/platform
-- **SearchComponent** — search input with content type toggle (All/Movies/TV), emits events upward
-- **PlatformSelectorComponent** — streaming service picker (Netflix, Prime Video, Disney+, Apple TV+, Paramount+, Crunchyroll, Max); persists selection to `localStorage` under key `selectedPlatforms`
+- **MovieListComponent** — main page orchestrating search, platform filtering, result display, and the recent-searches panel
+- **MovieDetailsComponent** — detail view with watch provider availability organized by country/platform; hosts the add-to-watchlist / "notify when available" toggle
+- **SearchComponent** — search input with content type toggle (All/Movies/TV); shows a recent-searches dropdown on focus, emits events upward
+- **PlatformSelectorComponent** — streaming service picker (Netflix, Prime Video, Disney+, Apple TV+, Paramount+, Crunchyroll, Max); persists selection to `localStorage` under key `selectedPlatforms`. Updates the selection immutably so bound children re-evaluate.
+- **WatchlistComponent** — `/watchlist` page listing saved titles; re-checks availability on open and badges titles that newly became streamable
 - **MovieCardComponent** — result card with poster, rating, year, France availability badge; contains hardcoded genre ID-to-name mapping
 - **CountrySelectorComponent** — country/region picker loaded from TMDB API
-- **HeaderComponent** — top nav bar with Material Toolbar
+- **HeaderComponent** — top nav bar (Search, Watchlist) with Material Toolbar; shows a watchlist count badge
 
 ### State Management
 
 No dedicated state library. State lives in:
 - **Component properties** for UI state
-- **localStorage** (`selectedPlatforms` key) for persisted streaming platform selection
+- **localStorage** for persisted data: `selectedPlatforms` (streaming platform selection), `watchlist` (saved titles, managed by `WatchlistService`), `searchHistory` (recent searches, managed by `SearchHistoryService`)
+- **Angular signals** in `WatchlistService` / `SearchHistoryService` expose their persisted lists reactively
 - **RxJS Observables** for async API data
+
+### Watchlist & notifications (`WatchlistService`)
+
+The app is backendless, so there are no push notifications. Instead, unavailable titles can be saved to the watchlist; on app open (`AppComponent`) and on opening `/watchlist`, availability is re-checked against the user's selected platforms (FR region) via TMDB, throttled per item. Titles that flip from unavailable to available trigger a one-time snackbar and an in-list badge (`notifiedAvailable` guards against re-alerting).
 
 ### Styling
 
@@ -81,9 +88,8 @@ StreamRadar helps users answer "what should I watch tonight?" across their strea
 
 ### Page Roles
 
-- **Search** (`/movies`): direct lookup — user knows what they want
-- **Inspiration** (`/inspiration`): discovery — help users find something unexpected
-- **Browse** (`/browse`): exploration — structured filtering and sorting
+- **Search** (`/movies`): direct lookup — user knows what they want; recent searches are surfaced for quick re-runs
+- **Watchlist** (`/watchlist`): titles the user is tracking, including ones not yet streaming on their platforms
 
 ## Deployment
 

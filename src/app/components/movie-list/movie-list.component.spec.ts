@@ -176,6 +176,49 @@ describe('MovieListComponent', () => {
     });
   });
 
+  describe('search history', () => {
+    it('records a search in history when results are found', () => {
+      movieServiceSpy.searchMovies.and.returnValue(of(mockMovies as any));
+
+      component.onSearch({ query: 'dune', contentType: 'movie' });
+
+      const recent = component.recentSearches();
+      expect(recent.length).toBeGreaterThan(0);
+      expect(recent[0].query).toBe('dune');
+      expect(recent[0].contentType).toBe('movie');
+    });
+
+    it('does not record a search when no results are found', () => {
+      const before = component.recentSearches().length;
+      movieServiceSpy.searchMovies.and.returnValue(
+        of({ page: 1, results: [], total_pages: 0, total_results: 0 } as any)
+      );
+
+      component.onSearch({ query: 'nothing', contentType: 'movie' });
+
+      expect(component.recentSearches().length).toBe(before);
+    });
+
+    it('rerunSearch re-issues the search for a history entry', () => {
+      movieServiceSpy.searchMulti.and.returnValue(of(mockMovies as any));
+
+      component.rerunSearch({ query: 'matrix', contentType: 'multi', at: 1 });
+
+      expect(component.lastSearchQuery).toBe('matrix');
+      expect(movieServiceSpy.searchMulti).toHaveBeenCalledWith('matrix');
+    });
+
+    it('clearHistory empties the recent searches', () => {
+      movieServiceSpy.searchMulti.and.returnValue(of(mockMovies as any));
+      component.onSearch({ query: 'matrix', contentType: 'multi' });
+      expect(component.recentSearches().length).toBeGreaterThan(0);
+
+      component.clearHistory();
+
+      expect(component.recentSearches().length).toBe(0);
+    });
+  });
+
   describe('onSelectMovie', () => {
     it('should navigate to movie details page when a movie is selected', () => {
       component.onSelectMovie(123);

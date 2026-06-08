@@ -1,8 +1,19 @@
 <div class="container" *ngIf="!loading && movie" [ngClass]="{'france-available': isAvailableInFrance}">
-  <!-- Back button -->
-  <button mat-button color="primary" (click)="goBack()" class="back-button">
-    <mat-icon>arrow_back</mat-icon> Back to Search
-  </button>
+  <!-- Top actions -->
+  <div class="detail-actions">
+    <button mat-button color="primary" (click)="goBack()" class="back-button">
+      <mat-icon>arrow_back</mat-icon> Back to Search
+    </button>
+
+    <button
+      mat-raised-button
+      [color]="isInWatchlist ? 'primary' : 'accent'"
+      class="watchlist-button"
+      (click)="toggleWatchlist()">
+      <mat-icon>{{ watchlistButtonIcon }}</mat-icon>
+      {{ watchlistButtonLabel }}
+    </button>
+  </div>
 
   <!-- Movie backdrop -->
   <div *ngIf="movie.backdrop_path" class="backdrop-container">

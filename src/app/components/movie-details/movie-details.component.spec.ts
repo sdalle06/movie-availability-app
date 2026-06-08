@@ -240,6 +240,32 @@ describe('MovieDetailsComponent', () => {
     });
   });
 
+  describe('watchlist toggle', () => {
+    it('labels the button "Notify when available" when not yet available', () => {
+      component.isAvailableInFrance = false;
+      expect(component.watchlistButtonLabel).toBe('Notify when available');
+      expect(component.watchlistButtonIcon).toBe('notifications_active');
+    });
+
+    it('labels the button "Add to Watchlist" when available', () => {
+      component.isAvailableInFrance = true;
+      expect(component.watchlistButtonLabel).toBe('Add to Watchlist');
+      expect(component.watchlistButtonIcon).toBe('bookmark_add');
+    });
+
+    it('toggleWatchlist adds the current item then removes it', () => {
+      component.movie = { ...mockMovie } as any;
+      component.contentType = 'movie';
+
+      component.toggleWatchlist();
+      expect(component.isInWatchlist).toBeTrue();
+      expect(component.watchlistButtonLabel).toBe('In Watchlist');
+
+      component.toggleWatchlist();
+      expect(component.isInWatchlist).toBeFalse();
+    });
+  });
+
   describe('findAvailableCountries', () => {
     it('should find countries where selected platforms are available', () => {
       component.selectedPlatforms = [8]; // Netflix

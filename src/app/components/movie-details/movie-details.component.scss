@@ -9,12 +9,28 @@
   }
 }
 
-.back-button {
+.detail-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 20px;
-  
+  flex-wrap: wrap;
+
   @media (max-width: 480px) {
     margin-bottom: 12px;
+  }
+}
+
+.back-button {
+  @media (max-width: 480px) {
     font-size: 14px;
+  }
+}
+
+.watchlist-button {
+  mat-icon {
+    margin-right: 6px;
   }
 }
 

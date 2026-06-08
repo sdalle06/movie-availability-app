@@ -148,6 +148,42 @@ describe('PlatformSelectorComponent', () => {
     expect(platformsChangeSpy).toHaveBeenCalledWith([337]);
   });
 
+  it('should update selectedPlatforms immutably (new array identity, original untouched)', () => {
+    const original = [8];
+    component.selectedPlatforms = original;
+
+    component.togglePlatform(337);
+
+    expect(component.selectedPlatforms).not.toBe(original);
+    expect(original).toEqual([8]); // original array was not mutated
+    expect(component.selectedPlatforms).toEqual([8, 337]);
+  });
+
+  it('should emit a copy from clearAll, not the live array', () => {
+    component.selectedPlatforms = [8, 337];
+    const platformsChangeSpy = spyOn(component.platformsChange, 'emit');
+
+    component.clearAll();
+
+    const emitted = platformsChangeSpy.calls.mostRecent().args[0];
+    expect(emitted).not.toBe(component.selectedPlatforms);
+    expect(emitted).toEqual([]);
+  });
+
+  it('should always emit the resolved selection after providers load', () => {
+    const newFixture = TestBed.createComponent(PlatformSelectorComponent);
+    const newComponent = newFixture.componentInstance;
+    const emitSpy = spyOn(newComponent.platformsChange, 'emit');
+    // Simulate cleanup having emptied the selection.
+    (localStorage.getItem as jasmine.Spy).and.returnValue(JSON.stringify([99999]));
+
+    newFixture.detectChanges();
+
+    expect(emitSpy).toHaveBeenCalled();
+    // 99999 isn't a valid provider, so it's cleaned out and an empty list emitted.
+    expect(emitSpy.calls.mostRecent().args[0]).toEqual([]);
+  });
+
   it('should check if a platform is selected', () => {
     component.selectedPlatforms = [8, 337];
 

@@ -9,12 +9,15 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { By } from '@angular/platform-browser';
 
 import { SearchComponent } from './search.component';
+import { SearchHistoryService } from '../../services/search-history.service';
 
 describe('SearchComponent', () => {
   let component: SearchComponent;
   let fixture: ComponentFixture<SearchComponent>;
+  let historyService: SearchHistoryService;
 
   beforeEach(async () => {
+    localStorage.clear();
     await TestBed.configureTestingModule({
       imports: [
         SearchComponent,
@@ -29,10 +32,13 @@ describe('SearchComponent', () => {
     })
     .compileComponents();
 
+    historyService = TestBed.inject(SearchHistoryService);
     fixture = TestBed.createComponent(SearchComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
+
+  afterEach(() => localStorage.clear());
 
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -141,5 +147,41 @@ describe('SearchComponent', () => {
   it('should have aria-label on content type toggle group', () => {
     const toggleGroup = fixture.debugElement.query(By.css('mat-button-toggle-group'));
     expect(toggleGroup.nativeElement.getAttribute('aria-label')).toBe('Content type filter');
+  });
+
+  describe('recent search suggestions', () => {
+    it('shows suggestions panel on focus when history exists', () => {
+      historyService.add('dune', 'movie');
+      component.onFocus();
+      fixture.detectChanges();
+
+      const panel = fixture.debugElement.query(By.css('.suggestions-panel'));
+      expect(panel).toBeTruthy();
+      const items = fixture.debugElement.queryAll(By.css('.suggestion-item'));
+      expect(items.length).toBe(1);
+    });
+
+    it('does not show the panel when there is no history', () => {
+      component.onFocus();
+      fixture.detectChanges();
+      expect(fixture.debugElement.query(By.css('.suggestions-panel'))).toBeNull();
+    });
+
+    it('caps suggestions at 6', () => {
+      for (let i = 0; i < 10; i++) {
+        historyService.add(`q${i}`, 'multi');
+      }
+      expect(component.suggestions().length).toBe(6);
+    });
+
+    it('selecting a suggestion sets controls and emits a search', () => {
+      const searchSpy = spyOn(component.search, 'emit');
+      component.selectSuggestion({ query: 'matrix', contentType: 'tv', at: 1 });
+
+      expect(component.searchControl.value).toBe('matrix');
+      expect(component.contentTypeControl.value).toBe('tv');
+      expect(searchSpy).toHaveBeenCalledWith({ query: 'matrix', contentType: 'tv' });
+      expect(component.showSuggestions).toBeFalse();
+    });
   });
 });

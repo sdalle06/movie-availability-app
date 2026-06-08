@@ -80,3 +80,24 @@ export interface PlatformAvailability {
   logoPath: string;
   countries: { countryCode: string; countryName: string }[];
 }
+
+export interface WatchlistItem {
+  id: number;
+  mediaType: 'movie' | 'tv';
+  title: string;
+  posterPath: string | null;
+  addedAt: number;
+  /** Last known availability on the user's selected platforms (FR region). */
+  available: boolean;
+  /** Epoch ms of the last availability check; 0 means never checked. */
+  lastChecked: number;
+  /** True once the "now available" alert has been surfaced, so we don't re-notify. */
+  notifiedAvailable: boolean;
+}
+
+export interface SearchHistoryEntry {
+  query: string;
+  contentType: string;
+  /** Epoch ms when the search was last performed. */
+  at: number;
+}

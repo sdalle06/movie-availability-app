@@ -12,6 +12,7 @@ import { combineLatest, forkJoin, Observable, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MovieService } from '../../services/movie.service';
+import { WatchlistService } from '../../services/watchlist.service';
 import {
   Movie,
   TVShow,
@@ -106,8 +107,40 @@ export class MovieDetailsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private movieService: MovieService
+    private movieService: MovieService,
+    private watchlistService: WatchlistService
   ) {}
+
+  get isInWatchlist(): boolean {
+    return !!this.movie && this.watchlistService.isInList(this.movie.id, this.contentType);
+  }
+
+  get watchlistButtonLabel(): string {
+    if (this.isInWatchlist) {
+      return 'In Watchlist';
+    }
+    return this.isAvailableInFrance ? 'Add to Watchlist' : 'Notify when available';
+  }
+
+  get watchlistButtonIcon(): string {
+    if (this.isInWatchlist) {
+      return 'bookmark';
+    }
+    return this.isAvailableInFrance ? 'bookmark_add' : 'notifications_active';
+  }
+
+  toggleWatchlist(): void {
+    if (!this.movie) {
+      return;
+    }
+    this.watchlistService.toggle({
+      id: this.movie.id,
+      mediaType: this.contentType,
+      title: this.contentTitle,
+      posterPath: this.movie.poster_path,
+      available: this.isAvailableInFrance
+    });
+  }
 
   ngOnInit(): void {
     // Get selected platforms from localStorage if available
