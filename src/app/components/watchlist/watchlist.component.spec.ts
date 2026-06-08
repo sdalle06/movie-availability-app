@@ -104,6 +104,16 @@ describe('WatchlistComponent', () => {
     expect(card.nativeElement.classList).toContain('now-available');
   });
 
+  it('derives the badge from offers, ignoring a stale stored available flag', async () => {
+    // Regression: stored available=false but offers show a usable region (FR).
+    await setup([makeItem({ id: 1, offers: ['FR:8'], available: false })]);
+    fixture.detectChanges();
+    expect(component.isAvailable(makeItem({ offers: ['FR:8'], available: false }))).toBeTrue();
+    const badge = fixture.debugElement.query(By.css('.availability-badge'));
+    expect(badge.nativeElement.textContent).toContain('Available for you');
+    expect(badge.nativeElement.classList).toContain('available');
+  });
+
   it('shows usable-region flags (FR + non-EU) and excludes EU-locked regions', async () => {
     // FR + US + KR are usable; DE is portability-locked and must be excluded.
     await setup([makeItem({ id: 1, offers: ['FR:8', 'US:8', 'KR:8', 'DE:8'], available: true })]);

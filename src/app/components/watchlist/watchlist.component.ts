@@ -83,6 +83,15 @@ export class WatchlistComponent implements OnInit {
     return item.mediaType === 'tv' ? ['/tv', String(item.id)] : ['/movies', String(item.id)];
   }
 
+  /**
+   * Whether the item is watchable for the user, derived live from its offers
+   * rather than the persisted `available` flag — so the badge can never
+   * contradict the flags shown, even if the stored flag is stale.
+   */
+  isAvailable(item: WatchlistItem): boolean {
+    return this.usableRegions(item).length > 0;
+  }
+
   /** All distinct country codes where the item currently streams. */
   regions(item: WatchlistItem): string[] {
     const codes = new Set(item.offers.map(o => o.split(':')[0]));
