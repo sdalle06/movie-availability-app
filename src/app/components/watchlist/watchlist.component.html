@@ -22,7 +22,7 @@
       <a
         *ngFor="let item of items(); trackBy: trackById"
         class="watch-card"
-        [class.now-available]="item.available"
+        [class.now-available]="isAvailable(item)"
         [class.has-new]="hasNewOffers(item)"
         [routerLink]="detailLink(item)">
         <div class="poster-wrap">
@@ -36,9 +36,9 @@
             (click)="remove(item, $event)">
             <mat-icon>close</mat-icon>
           </button>
-          <div class="availability-badge" [class.available]="item.available">
-            <mat-icon>{{ item.available ? 'check_circle' : 'notifications_active' }}</mat-icon>
-            <span>{{ item.available ? 'Available for you' : 'Not yet — tracking' }}</span>
+          <div class="availability-badge" [class.available]="isAvailable(item)">
+            <mat-icon>{{ isAvailable(item) ? 'check_circle' : 'notifications_active' }}</mat-icon>
+            <span>{{ isAvailable(item) ? 'Available for you' : 'Not yet — tracking' }}</span>
           </div>
         </div>
         <div class="card-body">
