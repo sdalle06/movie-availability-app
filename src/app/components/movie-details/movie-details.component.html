@@ -1,8 +1,19 @@
 <div class="container" *ngIf="!loading && movie" [ngClass]="{'france-available': isAvailableInFrance}">
-  <!-- Back button -->
-  <button mat-button color="primary" (click)="goBack()" class="back-button">
-    <mat-icon>arrow_back</mat-icon> Back to Search
-  </button>
+  <!-- Top actions -->
+  <div class="detail-actions">
+    <button mat-button color="primary" (click)="goBack()" class="back-button">
+      <mat-icon>arrow_back</mat-icon> Back to Search
+    </button>
+
+    <button
+      mat-raised-button
+      [color]="isInWatchlist ? 'primary' : 'accent'"
+      class="watchlist-button"
+      (click)="toggleWatchlist()">
+      <mat-icon>{{ watchlistButtonIcon }}</mat-icon>
+      {{ watchlistButtonLabel }}
+    </button>
+  </div>
 
   <!-- Movie backdrop -->
   <div *ngIf="movie.backdrop_path" class="backdrop-container">
@@ -110,7 +121,12 @@
 
           <!-- No availability -->
           <div *ngIf="selectedPlatforms.length > 0 && availablePlatforms.length === 0" class="message-container">
-            <p class="message">This movie is not available on any of your selected platforms in any country.</p>
+            <p class="message" *ngIf="lockedCountryCount === 0">This movie is not available on any of your selected platforms in any country.</p>
+            <p class="message" *ngIf="lockedCountryCount > 0">
+              Not reachable for you. It streams on your platforms only in {{ lockedCountryCount }} EU
+              {{ lockedCountryCount === 1 ? 'country' : 'countries' }} whose catalogue EU portability
+              rules keep locked to France.
+            </p>
           </div>
 
           <!-- Show availability by platform -->
@@ -146,6 +162,13 @@
                 </div>
               </mat-list-item>
             </mat-list>
+
+            <p class="locked-note" *ngIf="lockedCountryCount > 0">
+              <mat-icon>info</mat-icon>
+              Also on your platforms in {{ lockedCountryCount }} other EU
+              {{ lockedCountryCount === 1 ? 'country' : 'countries' }}, but EU portability rules
+              keep those locked to the French catalogue — not shown.
+            </p>
           </div>
         </mat-card-content>
       </mat-card>

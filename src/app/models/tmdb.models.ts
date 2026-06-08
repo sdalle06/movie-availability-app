@@ -80,3 +80,29 @@ export interface PlatformAvailability {
   logoPath: string;
   countries: { countryCode: string; countryName: string }[];
 }
+
+export interface WatchlistItem {
+  id: number;
+  mediaType: 'movie' | 'tv';
+  title: string;
+  posterPath: string | null;
+  addedAt: number;
+  /** Streaming in a usable region (FR/CA/US) on the user's selected platforms. */
+  available: boolean;
+  /**
+   * Last known offers as 'COUNTRY:providerId' keys, across ALL countries, for
+   * the user's selected platforms. Used to diff for newly-added offers.
+   */
+  offers: string[];
+  /** Offers newly detected at the most recent check (subset of offers). */
+  newOffers: string[];
+  /** Epoch ms of the last availability check; equals addedAt at creation. */
+  lastChecked: number;
+}
+
+export interface SearchHistoryEntry {
+  query: string;
+  contentType: string;
+  /** Epoch ms when the search was last performed. */
+  at: number;
+}

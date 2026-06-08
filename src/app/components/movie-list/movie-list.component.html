@@ -13,6 +13,24 @@
       </app-platform-selector>
     </div>
 
+    <div *ngIf="!loading && !searchPerformed && recentSearches().length > 0" class="recent-searches slide-up">
+      <div class="recent-header">
+        <h3 class="recent-title"><mat-icon>history</mat-icon> Recent searches</h3>
+        <button mat-button color="warn" (click)="clearHistory()">Clear</button>
+      </div>
+      <div class="recent-chips">
+        <button
+          *ngFor="let entry of recentSearches()"
+          type="button"
+          class="recent-chip"
+          (click)="rerunSearch(entry)">
+          <mat-icon>search</mat-icon>
+          <span class="recent-query">{{ entry.query }}</span>
+          <span class="recent-type" *ngIf="entry.contentType !== 'multi'">{{ entry.contentType === 'tv' ? 'TV' : 'Movies' }}</span>
+        </button>
+      </div>
+    </div>
+
     <div id="loading-section" *ngIf="loading" class="loading-container slide-up">
       <mat-spinner diameter="60" color="accent"></mat-spinner>
       <p class="loading-text">Searching...</p>

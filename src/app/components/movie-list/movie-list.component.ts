@@ -8,10 +8,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { MovieService } from '../../services/movie.service';
+import { SearchHistoryService } from '../../services/search-history.service';
 import { SearchComponent } from '../search/search.component';
 import { MovieCardComponent } from '../movie-card/movie-card.component';
 import { PlatformSelectorComponent } from '../platform-selector/platform-selector.component';
-import { SearchResultItem } from '../../models/tmdb.models';
+import { SearchHistoryEntry, SearchResultItem } from '../../models/tmdb.models';
 
 @Component({
   selector: 'app-movie-list',
@@ -38,6 +39,9 @@ export class MovieListComponent implements OnInit {
   lastContentType = 'multi';
 
   private destroyRef = inject(DestroyRef);
+
+  readonly recentSearches = inject(SearchHistoryService).entries;
+  private searchHistory = inject(SearchHistoryService);
 
   constructor(
     private movieService: MovieService,
@@ -108,6 +112,8 @@ export class MovieListComponent implements OnInit {
         this.saveSearchState();
 
         if (this.movies.length > 0) {
+          this.searchHistory.add(searchData.query, searchData.contentType);
+
           setTimeout(() => {
             const moviesSection = document.getElementById('movies-section');
             if (moviesSection) {
@@ -150,5 +156,15 @@ export class MovieListComponent implements OnInit {
     this.lastSearchQuery = '';
     this.lastContentType = 'multi';
     sessionStorage.removeItem('searchState');
+  }
+
+  rerunSearch(entry: SearchHistoryEntry): void {
+    this.lastSearchQuery = entry.query;
+    this.lastContentType = entry.contentType;
+    this.onSearch({ query: entry.query, contentType: entry.contentType });
+  }
+
+  clearHistory(): void {
+    this.searchHistory.clear();
   }
 }

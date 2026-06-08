@@ -9,12 +9,28 @@
   }
 }
 
-.back-button {
+.detail-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 20px;
-  
+  flex-wrap: wrap;
+
   @media (max-width: 480px) {
     margin-bottom: 12px;
+  }
+}
+
+.back-button {
+  @media (max-width: 480px) {
     font-size: 14px;
+  }
+}
+
+.watchlist-button {
+  mat-icon {
+    margin-right: 6px;
   }
 }
 
@@ -657,5 +673,24 @@ mat-card.france-available {
     &:hover {
       transform: scale(1.03);
     }
+  }
+}
+
+.locked-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    opacity: 0.7;
   }
 }

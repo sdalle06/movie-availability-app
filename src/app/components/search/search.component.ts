@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
@@ -6,6 +6,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+
+import { SearchHistoryService } from '../../services/search-history.service';
+import { SearchHistoryEntry } from '../../models/tmdb.models';
 
 @Component({
   selector: 'app-search',
@@ -29,6 +32,11 @@ export class SearchComponent implements OnInit {
   searchControl = new FormControl('');
   contentTypeControl = new FormControl('multi');
 
+  private searchHistory = inject(SearchHistoryService);
+  /** Most recent searches, capped for the dropdown. */
+  readonly suggestions = computed(() => this.searchHistory.entries().slice(0, 6));
+  showSuggestions = false;
+
   ngOnInit(): void {
     if (this.initialQuery) {
       this.searchControl.setValue(this.initialQuery);
@@ -45,12 +53,29 @@ export class SearchComponent implements OnInit {
     });
   }
 
+  onFocus(): void {
+    this.showSuggestions = true;
+  }
+
+  onBlur(): void {
+    // Delay so a click on a suggestion registers before the panel closes.
+    setTimeout(() => (this.showSuggestions = false), 150);
+  }
+
+  selectSuggestion(entry: SearchHistoryEntry): void {
+    this.showSuggestions = false;
+    this.searchControl.setValue(entry.query);
+    this.contentTypeControl.setValue(entry.contentType, { emitEvent: false });
+    this.search.emit({ query: entry.query, contentType: entry.contentType });
+  }
+
   onSearch(): void {
     const query = this.searchControl.value?.trim();
     const contentType = this.contentTypeControl.value || 'multi';
     if (query) {
+      this.showSuggestions = false;
       this.search.emit({query, contentType});
-      
+
       // Simplified scrolling approach to avoid blocking issues
       setTimeout(() => {
         const loadingSection = document.getElementById('loading-section');
@@ -60,7 +85,7 @@ export class SearchComponent implements OnInit {
       }, 100);
     }
   }
-  
+
   clearSearch(event: Event): void {
     event.stopPropagation();
     this.searchControl.setValue('');

@@ -130,10 +130,9 @@ export class PlatformSelectorComponent implements OnInit {
 
         this.loading = false;
 
-        // Emit initial platforms after providers are loaded
-        if (this.selectedPlatforms.length > 0) {
-          this.platformsChange.emit([...this.selectedPlatforms]);
-        }
+        // Always emit the resolved selection (even when empty) so the parent
+        // and localStorage never hold a stale list after cleanup.
+        this.platformsChange.emit([...this.selectedPlatforms]);
       },
       error: (err) => {
         console.error('Error loading providers:', err);
@@ -144,13 +143,11 @@ export class PlatformSelectorComponent implements OnInit {
   }
 
   togglePlatform(providerId: number): void {
-    const index = this.selectedPlatforms.indexOf(providerId);
-
-    if (index === -1) {
-      this.selectedPlatforms.push(providerId);
-    } else {
-      this.selectedPlatforms.splice(index, 1);
-    }
+    // Immutable update so the array identity changes and bound children
+    // (movie cards, details) re-evaluate their availability inputs.
+    this.selectedPlatforms = this.selectedPlatforms.includes(providerId)
+      ? this.selectedPlatforms.filter(id => id !== providerId)
+      : [...this.selectedPlatforms, providerId];
 
     localStorage.setItem('selectedPlatforms', JSON.stringify(this.selectedPlatforms));
     this.platformsChange.emit([...this.selectedPlatforms]);
@@ -168,7 +165,7 @@ export class PlatformSelectorComponent implements OnInit {
   clearAll(): void {
     this.selectedPlatforms = [];
     localStorage.setItem('selectedPlatforms', JSON.stringify(this.selectedPlatforms));
-    this.platformsChange.emit(this.selectedPlatforms);
+    this.platformsChange.emit([...this.selectedPlatforms]);
   }
 
   toggleShowAllProviders(): void {
