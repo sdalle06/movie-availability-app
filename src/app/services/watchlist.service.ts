@@ -3,13 +3,17 @@ import { Observable, forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 import { MovieService } from './movie.service';
-import { WatchlistItem, WatchProvider } from '../models/tmdb.models';
+import { isUsableRegion } from '../utils/region.util';
+import { CountryWatchProviders, WatchProvider, WatchlistItem } from '../models/tmdb.models';
 
 const STORAGE_KEY = 'watchlist';
 /** Don't re-query TMDB for an item checked more recently than this. */
 const CHECK_THROTTLE_MS = 6 * 60 * 60 * 1000; // 6 hours
-/** Availability is evaluated for the user's home region. */
-const HOME_REGION = 'FR';
+
+type AddPayload =
+  Pick<WatchlistItem, 'id' | 'mediaType' | 'title'> &
+  Partial<Pick<WatchlistItem, 'posterPath'>> &
+  { providers?: Record<string, CountryWatchProviders>; selectedPlatforms?: number[] };
 
 @Injectable({ providedIn: 'root' })
 export class WatchlistService {
@@ -28,7 +32,21 @@ export class WatchlistService {
     }
     try {
       const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+      // Tolerate items saved before offer-tracking existed. If an item has no
+      // offers recorded, reset lastChecked to 0 so the next check re-populates
+      // it once (instead of being stuck behind the throttle).
+      return parsed.map((i: Partial<WatchlistItem>) => {
+        const offers = Array.isArray(i.offers) ? i.offers : [];
+        return {
+          ...i,
+          offers,
+          newOffers: Array.isArray(i.newOffers) ? i.newOffers : [],
+          lastChecked: offers.length === 0 ? 0 : (i.lastChecked ?? 0)
+        };
+      }) as WatchlistItem[];
     } catch {
       localStorage.removeItem(STORAGE_KEY);
       return [];
@@ -44,19 +62,28 @@ export class WatchlistService {
     return this._items().some(i => i.id === id && i.mediaType === mediaType);
   }
 
-  add(item: Omit<WatchlistItem, 'addedAt' | 'available' | 'lastChecked' | 'notifiedAvailable'> & Partial<WatchlistItem>): void {
+  add(item: AddPayload): void {
     if (this.isInList(item.id, item.mediaType)) {
       return;
     }
+    // Seed the offer baseline from the detail page's provider data when present,
+    // so offers already streaming at add-time are NOT later flagged as "new".
+    const offers = item.providers
+      ? this.extractOffers(item.providers, item.selectedPlatforms ?? [])
+      : [];
+    const now = Date.now();
     const entry: WatchlistItem = {
       id: item.id,
       mediaType: item.mediaType,
       title: item.title,
       posterPath: item.posterPath ?? null,
-      addedAt: Date.now(),
-      available: item.available ?? false,
-      lastChecked: item.lastChecked ?? 0,
-      notifiedAvailable: item.notifiedAvailable ?? false
+      addedAt: now,
+      available: this.hasUsableOffer(offers),
+      offers,
+      newOffers: [],
+      // Only treat as "checked" if we actually captured offer data; otherwise
+      // leave it 0 so the next checkAvailability populates it immediately.
+      lastChecked: offers.length > 0 ? now : 0
     };
     this.persist([entry, ...this._items()]);
   }
@@ -65,7 +92,7 @@ export class WatchlistService {
     this.persist(this._items().filter(i => !(i.id === id && i.mediaType === mediaType)));
   }
 
-  toggle(item: Omit<WatchlistItem, 'addedAt' | 'available' | 'lastChecked' | 'notifiedAvailable'> & Partial<WatchlistItem>): void {
+  toggle(item: AddPayload): void {
     if (this.isInList(item.id, item.mediaType)) {
       this.remove(item.id, item.mediaType);
     } else {
@@ -78,11 +105,11 @@ export class WatchlistService {
   }
 
   /**
-   * Re-checks availability for every watchlist item on the user's selected
-   * platforms (home region). Items checked within the throttle window are
-   * skipped. Resolves to the items that newly flipped from unavailable to
-   * available and had not yet been notified — those are marked notified so
-   * subsequent checks don't alert again.
+   * Re-checks every watchlist item against the user's selected platforms across
+   * all countries. Items checked within the throttle window are skipped.
+   * Updates each item's offer set, the usable-region `available` flag, and the
+   * `newOffers` delta (offers that appeared since the last known set). Resolves
+   * to the items that gained at least one new offer, so the caller can notify.
    */
   checkAvailability(selectedPlatforms: number[]): Observable<WatchlistItem[]> {
     const items = this._items();
@@ -91,7 +118,12 @@ export class WatchlistService {
     }
 
     const now = Date.now();
-    const toCheck = items.filter(i => now - i.lastChecked >= CHECK_THROTTLE_MS);
+    // Always re-check items that have no offers recorded yet (e.g. added before
+    // offer-tracking, or added without provider data); otherwise honour the
+    // throttle so we don't hammer the API on every open.
+    const toCheck = items.filter(
+      i => i.offers.length === 0 || now - i.lastChecked >= CHECK_THROTTLE_MS
+    );
     if (toCheck.length === 0) {
       return of([]);
     }
@@ -101,55 +133,69 @@ export class WatchlistService {
         ? this.movieService.getMovieWatchProviders(item.id)
         : this.movieService.getTVWatchProviders(item.id);
       return providers$.pipe(
-        map(response => ({
-          item,
-          available: this.isAvailableOnPlatforms(response.results?.[HOME_REGION], selectedPlatforms)
-        })),
-        catchError(() => of({ item, available: item.available }))
+        map(response => ({ item, offers: this.extractOffers(response.results ?? {}, selectedPlatforms) })),
+        // On error keep the previously-known offers so nothing is falsely lost.
+        catchError(() => of({ item, offers: item.offers }))
       );
     });
 
     return forkJoin(calls).pipe(
       map(results => {
-        const flippedToAvailable: WatchlistItem[] = [];
-        const byId = new Map(results.map(r => [`${r.item.mediaType}:${r.item.id}`, r]));
+        const gainedOffers: WatchlistItem[] = [];
+        const byKey = new Map(results.map(r => [`${r.item.mediaType}:${r.item.id}`, r]));
 
         const updated = this._items().map(existing => {
-          const result = byId.get(`${existing.mediaType}:${existing.id}`);
+          const result = byKey.get(`${existing.mediaType}:${existing.id}`);
           if (!result) {
             return existing;
           }
-          const becameAvailable = result.available && !existing.available;
+          const prev = new Set(existing.offers);
+          const newOffers = result.offers.filter(o => !prev.has(o));
           const next: WatchlistItem = {
             ...existing,
-            available: result.available,
-            lastChecked: now,
-            notifiedAvailable: existing.notifiedAvailable || (becameAvailable ? true : existing.notifiedAvailable)
+            offers: result.offers,
+            newOffers,
+            available: this.hasUsableOffer(result.offers),
+            lastChecked: now
           };
-          if (becameAvailable && !existing.notifiedAvailable) {
-            flippedToAvailable.push(next);
+          if (newOffers.length > 0) {
+            gainedOffers.push(next);
           }
           return next;
         });
 
         this.persist(updated);
-        return flippedToAvailable;
+        return gainedOffers;
       })
     );
   }
 
-  private isAvailableOnPlatforms(
-    countryProviders: { flatrate?: WatchProvider[]; rent?: WatchProvider[]; buy?: WatchProvider[] } | undefined,
+  /** Builds sorted 'COUNTRY:providerId' keys for the selected platforms, all countries. */
+  private extractOffers(
+    results: Record<string, CountryWatchProviders>,
     selectedPlatforms: number[]
-  ): boolean {
-    if (!countryProviders) {
-      return false;
+  ): string[] {
+    const offers: string[] = [];
+    for (const [country, data] of Object.entries(results)) {
+      const providers: WatchProvider[] = [
+        ...(data.flatrate || []),
+        ...(data.rent || []),
+        ...(data.buy || [])
+      ];
+      for (const p of providers) {
+        if (selectedPlatforms.includes(p.provider_id)) {
+          const key = `${country}:${p.provider_id}`;
+          if (!offers.includes(key)) {
+            offers.push(key);
+          }
+        }
+      }
     }
-    const all: WatchProvider[] = [
-      ...(countryProviders.flatrate || []),
-      ...(countryProviders.rent || []),
-      ...(countryProviders.buy || [])
-    ];
-    return all.some(p => selectedPlatforms.includes(p.provider_id));
+    return offers.sort();
+  }
+
+  /** True when any offer is in a region the household can actually watch. */
+  private hasUsableOffer(offers: string[]): boolean {
+    return offers.some(o => isUsableRegion(o.split(':')[0]));
   }
 }

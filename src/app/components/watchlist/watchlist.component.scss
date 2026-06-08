@@ -65,6 +65,10 @@
   outline: 2px solid var(--accent-color);
 }
 
+.watch-card.has-new {
+  outline: 2px solid #4caf50;
+}
+
 .poster-wrap {
   position: relative;
   aspect-ratio: 2 / 3;
@@ -90,6 +94,20 @@
   border-radius: 999px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+.new-chip {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #4caf50;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 10px;
+  border-radius: 999px;
 }
 
 .remove-btn {
@@ -133,11 +151,77 @@
 .card-title {
   font-size: 0.95rem;
   font-weight: 600;
-  margin: 0;
+  margin: 0 0 8px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.regions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.regions.empty {
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.regions-other {
+  font-size: 0.7rem;
+  color: var(--text-light);
+  opacity: 0.8;
+}
+
+.region-flags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.region-flag {
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0.4;
+  filter: grayscale(0.6);
+}
+
+.region-flag.usable {
+  opacity: 1;
+  filter: none;
+}
+
+.region-flag.home {
+  position: relative;
+  font-size: 1.15rem;
+}
+
+.regions-extra {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  align-self: center;
+}
+
+.region-flag.new {
+  position: relative;
+}
+
+.region-flag.new::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4caf50;
 }
 
 /* Empty state */

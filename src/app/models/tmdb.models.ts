@@ -87,12 +87,17 @@ export interface WatchlistItem {
   title: string;
   posterPath: string | null;
   addedAt: number;
-  /** Last known availability on the user's selected platforms (FR region). */
+  /** Streaming in a usable region (FR/CA/US) on the user's selected platforms. */
   available: boolean;
-  /** Epoch ms of the last availability check; 0 means never checked. */
+  /**
+   * Last known offers as 'COUNTRY:providerId' keys, across ALL countries, for
+   * the user's selected platforms. Used to diff for newly-added offers.
+   */
+  offers: string[];
+  /** Offers newly detected at the most recent check (subset of offers). */
+  newOffers: string[];
+  /** Epoch ms of the last availability check; equals addedAt at creation. */
   lastChecked: number;
-  /** True once the "now available" alert has been surfaced, so we don't re-notify. */
-  notifiedAvailable: boolean;
 }
 
 export interface SearchHistoryEntry {

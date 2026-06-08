@@ -8,7 +8,11 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { WatchlistService } from '../../services/watchlist.service';
+import { isHomeRegion, isPreferredRegion, isUsableRegion, regionRank } from '../../utils/region.util';
 import { WatchlistItem } from '../../models/tmdb.models';
+
+/** Max usable-region flags to show on a card before collapsing to "+N more". */
+const MAX_FLAGS = 6;
 
 @Component({
   selector: 'app-watchlist',
@@ -45,12 +49,12 @@ export class WatchlistComponent implements OnInit {
     this.watchlistService.checkAvailability(selectedPlatforms).pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
-      next: (nowAvailable) => {
+      next: (gainedOffers) => {
         this.checking = false;
-        if (nowAvailable.length > 0) {
-          const names = nowAvailable.map(i => i.title).join(', ');
+        if (gainedOffers.length > 0) {
+          const names = gainedOffers.map(i => i.title).join(', ');
           this.snackBar.open(
-            `Now streaming on your platforms: ${names}`,
+            `New availability for: ${names}`,
             'Close',
             { duration: 5000 }
           );
@@ -77,6 +81,64 @@ export class WatchlistComponent implements OnInit {
 
   detailLink(item: WatchlistItem): string[] {
     return item.mediaType === 'tv' ? ['/tv', String(item.id)] : ['/movies', String(item.id)];
+  }
+
+  /** All distinct country codes where the item currently streams. */
+  regions(item: WatchlistItem): string[] {
+    const codes = new Set(item.offers.map(o => o.split(':')[0]));
+    return Array.from(codes).sort();
+  }
+
+  /**
+   * Usable regions the item streams in (France first, then VPN-reachable
+   * non-EU countries). EU/EEA-except-France is excluded — portability makes
+   * those unwatchable from France.
+   */
+  usableRegions(item: WatchlistItem): string[] {
+    return this.regions(item)
+      .filter(isUsableRegion)
+      .sort((a, b) => regionRank(a) - regionRank(b) || a.localeCompare(b));
+  }
+
+  /** Count of EU/EEA-except-France regions (shown streaming but locked to FR). */
+  lockedRegionCount(item: WatchlistItem): number {
+    return this.regions(item).filter(c => !isUsableRegion(c)).length;
+  }
+
+  /** Usable-region flags to render, capped so ubiquitous titles stay compact. */
+  displayedRegions(item: WatchlistItem): string[] {
+    return this.usableRegions(item).slice(0, MAX_FLAGS);
+  }
+
+  /** How many usable regions are hidden beyond the cap. */
+  extraRegionCount(item: WatchlistItem): number {
+    return Math.max(0, this.usableRegions(item).length - MAX_FLAGS);
+  }
+
+  isHome(countryCode: string): boolean {
+    return isHomeRegion(countryCode);
+  }
+
+  isPreferred(countryCode: string): boolean {
+    return isPreferredRegion(countryCode);
+  }
+
+  hasNewOffers(item: WatchlistItem): boolean {
+    return item.newOffers.length > 0;
+  }
+
+  /** Country codes that appeared since the last check. */
+  newRegions(item: WatchlistItem): string[] {
+    const codes = new Set(item.newOffers.map(o => o.split(':')[0]));
+    return Array.from(codes).sort();
+  }
+
+  flagEmoji(countryCode: string): string {
+    const codePoints = countryCode
+      .toUpperCase()
+      .split('')
+      .map(char => 127397 + char.charCodeAt(0));
+    return String.fromCodePoint(...codePoints);
   }
 
   getPosterPath(posterPath: string | null): string {

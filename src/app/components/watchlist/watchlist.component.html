@@ -23,10 +23,12 @@
         *ngFor="let item of items(); trackBy: trackById"
         class="watch-card"
         [class.now-available]="item.available"
+        [class.has-new]="hasNewOffers(item)"
         [routerLink]="detailLink(item)">
         <div class="poster-wrap">
           <img [src]="getPosterPath(item.posterPath)" [alt]="item.title" class="poster" loading="lazy">
           <span class="media-chip">{{ item.mediaType === 'tv' ? 'TV' : 'Movie' }}</span>
+          <span class="new-chip" *ngIf="hasNewOffers(item)">NEW</span>
           <button
             mat-icon-button
             class="remove-btn"
@@ -36,11 +38,30 @@
           </button>
           <div class="availability-badge" [class.available]="item.available">
             <mat-icon>{{ item.available ? 'check_circle' : 'notifications_active' }}</mat-icon>
-            <span>{{ item.available ? 'Now available' : 'Not yet — tracking' }}</span>
+            <span>{{ item.available ? 'Available for you' : 'Not yet — tracking' }}</span>
           </div>
         </div>
         <div class="card-body">
           <h3 class="card-title">{{ item.title }}</h3>
+          <div class="regions" *ngIf="usableRegions(item).length > 0; else noUsable">
+            <span class="regions-label">Watch in:</span>
+            <span class="region-flags">
+              <span
+                *ngFor="let code of displayedRegions(item)"
+                class="region-flag usable"
+                [class.home]="isHome(code)"
+                [class.preferred]="isPreferred(code)"
+                [class.new]="newRegions(item).includes(code)"
+                [title]="code">{{ flagEmoji(code) }}</span>
+              <span class="regions-extra" *ngIf="extraRegionCount(item) > 0">+{{ extraRegionCount(item) }}</span>
+            </span>
+          </div>
+          <ng-template #noUsable>
+            <p class="regions empty" *ngIf="lockedRegionCount(item) === 0">Not streaming anywhere yet</p>
+            <p class="regions empty" *ngIf="lockedRegionCount(item) > 0">
+              Only in EU catalogues you can't reach from France
+            </p>
+          </ng-template>
         </div>
       </a>
     </div>

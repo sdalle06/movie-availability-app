@@ -12,7 +12,7 @@ import { WatchlistItem } from './models/tmdb.models';
 function makeItem(overrides: Partial<WatchlistItem> = {}): WatchlistItem {
   return {
     id: 1, mediaType: 'movie', title: 'Test', posterPath: null,
-    addedAt: 0, available: false, lastChecked: 0, notifiedAvailable: false,
+    addedAt: 0, available: false, offers: [], newOffers: [], lastChecked: 0,
     ...overrides
   };
 }

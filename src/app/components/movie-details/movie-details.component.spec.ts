@@ -282,5 +282,35 @@ describe('MovieDetailsComponent', () => {
 
       expect(component.availableCountries.length).toBe(0);
     });
+
+    it('keeps non-France European matches (regression: SM/VA were dropped)', () => {
+      component.selectedPlatforms = [119]; // Prime Video
+      component.watchProviders = {
+        SM: { flatrate: [{ provider_id: 119, provider_name: 'Amazon Prime Video', logo_path: '/p.jpg' }] },
+        VA: { flatrate: [{ provider_id: 119, provider_name: 'Amazon Prime Video', logo_path: '/p.jpg' }] }
+      } as any;
+      component.countryMap = { SM: 'San Marino', VA: 'Vatican City' };
+      component.findAvailableCountries();
+
+      const codes = component.availableCountries.map(c => c.countryCode).sort();
+      expect(codes).toEqual(['SM', 'VA']);
+    });
+
+    it('pins France first and drops EU-locked (DE), keeping non-EU (US)', () => {
+      component.selectedPlatforms = [8];
+      component.watchProviders = {
+        US: { flatrate: [{ provider_id: 8, provider_name: 'Netflix', logo_path: '/n.jpg' }] },
+        FR: { flatrate: [{ provider_id: 8, provider_name: 'Netflix', logo_path: '/n.jpg' }] },
+        DE: { flatrate: [{ provider_id: 8, provider_name: 'Netflix', logo_path: '/n.jpg' }] }
+      } as any;
+      component.countryMap = { US: 'United States', FR: 'France', DE: 'Germany' };
+      component.findAvailableCountries();
+
+      const codes = component.availableCountries.map(c => c.countryCode);
+      expect(codes[0]).toBe('FR');         // France pinned first
+      expect(codes).toContain('US');        // non-EU kept
+      expect(codes).not.toContain('DE');    // EU-non-France dropped
+      expect(component.lockedCountryCount).toBe(1); // DE counted as locked
+    });
   });
 });

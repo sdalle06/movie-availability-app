@@ -13,6 +13,7 @@ import { catchError, switchMap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MovieService } from '../../services/movie.service';
 import { WatchlistService } from '../../services/watchlist.service';
+import { isHomeRegion, isPortabilityLocked, isUsableRegion } from '../../utils/region.util';
 import {
   Movie,
   TVShow,
@@ -90,14 +91,8 @@ export class MovieDetailsComponent implements OnInit {
   availableCountries: CountryAvailability[] = [];
   availablePlatforms: PlatformAvailability[] = [];
   countryMap: Record<string, string> = {};
-
-  // List of European country codes
-  private europeanCountryCodes: string[] = [
-    'AL', 'AD', 'AT', 'BY', 'BE', 'BA', 'BG', 'HR', 'CY', 'CZ', 'DK',
-    'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IS', 'IE', 'IT', 'LV', 'LI',
-    'LT', 'LU', 'MT', 'MD', 'MC', 'ME', 'NL', 'MK', 'NO', 'PL', 'PT',
-    'RO', 'RU', 'SM', 'RS', 'SK', 'SI', 'ES', 'SE', 'CH', 'UA', 'GB', 'VA'
-  ];
+  /** EU/EEA-except-France countries where it streams but the user can't reach. */
+  lockedCountryCount = 0;
 
   // Environment configuration for image paths
   private imageBaseUrl = 'https://image.tmdb.org/t/p/';
@@ -138,7 +133,8 @@ export class MovieDetailsComponent implements OnInit {
       mediaType: this.contentType,
       title: this.contentTitle,
       posterPath: this.movie.poster_path,
-      available: this.isAvailableInFrance
+      providers: this.watchProviders ?? {},
+      selectedPlatforms: this.selectedPlatforms
     });
   }
 
@@ -259,23 +255,22 @@ export class MovieDetailsComponent implements OnInit {
       }
     });
 
-    const europeanCountries = tempAvailableCountries.filter(country =>
-      this.europeanCountryCodes.includes(country.countryCode)
-    );
+    tempAvailableCountries.sort((a, b) => a.countryName.localeCompare(b.countryName));
 
-    if (europeanCountries.length > 0) {
-      const franceAvailability = europeanCountries.find(country => country.countryCode === 'FR');
-      if (franceAvailability) {
-        this.availableCountries.push(franceAvailability);
-      }
+    // EU/EEA-except-France availability is unreachable from France (portability
+    // serves the French catalogue even over a VPN), so it's surfaced only as a
+    // muted footnote count rather than as actionable availability.
+    this.lockedCountryCount = tempAvailableCountries
+      .filter(c => isPortabilityLocked(c.countryCode)).length;
+
+    const usable = tempAvailableCountries.filter(c => isUsableRegion(c.countryCode));
+    const france = usable.find(c => isHomeRegion(c.countryCode));
+    if (france) {
+      this.availableCountries.push(france);
     }
-
-    const nonEuropeanCountries = tempAvailableCountries.filter(country =>
-      !this.europeanCountryCodes.includes(country.countryCode)
+    this.availableCountries.push(
+      ...usable.filter(c => !isHomeRegion(c.countryCode))
     );
-    this.availableCountries.push(...nonEuropeanCountries);
-
-    this.availableCountries.sort((a, b) => a.countryName.localeCompare(b.countryName));
   }
 
   organizeByPlatform(): void {
