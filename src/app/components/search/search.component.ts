@@ -69,6 +69,12 @@ export class SearchComponent implements OnInit {
     this.search.emit({ query: entry.query, contentType: entry.contentType });
   }
 
+  /** Native form submit — fires on both the button and the mobile keyboard's Enter/Search key. */
+  onSubmit(event: Event): void {
+    event.preventDefault();
+    this.onSearch();
+  }
+
   onSearch(): void {
     const query = this.searchControl.value?.trim();
     const contentType = this.contentTypeControl.value || 'multi';

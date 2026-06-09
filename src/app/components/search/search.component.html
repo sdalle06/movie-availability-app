@@ -16,7 +16,7 @@
     </mat-button-toggle-group>
   </div>
   
-  <div class="search-wrapper">
+  <form class="search-wrapper" (submit)="onSubmit($event)">
     <div class="search-field-wrapper">
       <mat-form-field appearance="outline" class="search-field">
         <mat-label>Find content</mat-label>
@@ -24,7 +24,7 @@
           matInput
           [formControl]="searchControl"
           placeholder="Enter title to search"
-          (keyup.enter)="onSearch()"
+          enterkeyhint="search"
           (focus)="onFocus()"
           (blur)="onBlur()"
           autocomplete="off"
@@ -56,14 +56,14 @@
     </div>
 
     <button
-      mat-raised-button 
-      color="accent" 
-      class="search-button" 
-      (click)="onSearch()"
+      type="submit"
+      mat-raised-button
+      color="accent"
+      class="search-button"
       [disabled]="!searchControl.value"
     >
       <mat-icon>search</mat-icon>
       <span>Search</span>
     </button>
-  </div>
+  </form>
 </div>

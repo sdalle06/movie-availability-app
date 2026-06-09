@@ -116,14 +116,14 @@ describe('SearchComponent', () => {
     expect(searchSpy).toHaveBeenCalled();
   });
 
-  it('should trigger onSearch when Enter key is pressed in input', () => {
+  it('should trigger onSearch on form submit (covers the mobile keyboard Enter key)', () => {
     const searchQuery = 'test movie';
     const searchSpy = spyOn(component, 'onSearch');
     component.searchControl.setValue(searchQuery);
     fixture.detectChanges();
 
-    const input = fixture.debugElement.query(By.css('input'));
-    input.triggerEventHandler('keyup.enter', {});
+    const form = fixture.debugElement.query(By.css('form.search-wrapper'));
+    form.triggerEventHandler('submit', { preventDefault: () => {} });
 
     expect(searchSpy).toHaveBeenCalled();
   });
