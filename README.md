@@ -1,59 +1,55 @@
-# MovieAvailabilityApp
+# StreamRadar
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.11.
+**Find out which streaming platforms carry the movies and TV shows you want — across countries.**
 
-## Development server
+StreamRadar helps casual viewers in France and the rest of Europe answer "what should I watch tonight?" across their streaming subscriptions. Search any title and instantly see which platforms (Netflix, Prime Video, Disney+, Apple TV+, Paramount+, Max, Crunchyroll) offer it, and how availability changes from one region to another. Built on [The Movie Database (TMDB)](https://www.themoviedb.org/) API.
 
-To start a local development server, run:
+🔗 **Live app:** https://sdalle06.github.io/movie-availability-app/
 
-```bash
-ng serve
-```
+## Features
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- **Cross-platform search** — look up movies and TV shows and see streaming availability per platform.
+- **Cross-region availability** — compare where a title streams across countries, surfacing what no single streaming app can show.
+- **Platform filtering** — pick your subscriptions; results highlight what's available to you.
+- **Watchlist** — save titles (including ones not yet streaming) and get re-checked on app open; titles that newly become streamable are flagged.
+- **Recent searches** — quick re-run of past lookups from a dropdown and a panel on the search page.
+- **No accounts** — all personalization (selected platforms, watchlist, history) lives in the browser via `localStorage`.
 
-## Code scaffolding
+## Tech Stack
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- **Angular 19.2** with standalone components (no NgModules)
+- **Angular Material 19** for UI
+- **TypeScript 5.7** (strict mode), **RxJS 7.8**, **SCSS**
+- **Karma/Jasmine** for unit tests
+- **TMDB API v3** as the data source
 
-```bash
-ng generate component component-name
-```
+## Getting Started
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+Requires Node.js and npm. The app reads the TMDB API key from `src/environments/`.
 
 ```bash
-ng build
+npm install
+npm start          # dev server at http://localhost:4200
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Available Scripts
 
-## Running unit tests
+- `npm start` — dev server at `localhost:4200`
+- `npm test` — unit tests (Karma + Jasmine)
+- `npm run build` — production build (output in `dist/`)
+- `npm run deploy` — production build with the GitHub Pages base href
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+## Deployment
 
-```bash
-ng test
-```
+A GitHub Actions workflow (`.github/workflows/deploy.yml`) auto-deploys to GitHub Pages on every push to `main`. The build copies `index.html` to `404.html` for SPA routing support on GitHub Pages.
 
-## Running end-to-end tests
+## Project Structure
 
-For end-to-end (e2e) testing, run:
+The app is a single Angular SPA. Routes:
 
-```bash
-ng e2e
-```
+- `/movies` — search and results
+- `/movies/:id` — movie detail with per-country / per-platform availability
+- `/tv/:id` — TV show detail (reuses the detail component)
+- `/watchlist` — saved titles with availability re-check
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+A single `MovieService` wraps all TMDB calls (search, details, watch providers, provider listings, region configuration). See [`CLAUDE.md`](./CLAUDE.md) for a fuller architecture overview.
