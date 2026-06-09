@@ -1,8 +1,9 @@
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -22,6 +23,7 @@ const MAX_FLAGS = 6;
     RouterLink,
     MatIconModule,
     MatButtonModule,
+    MatButtonToggleModule,
     MatProgressSpinnerModule,
     MatSnackBarModule
   ],
@@ -35,6 +37,18 @@ export class WatchlistComponent implements OnInit {
 
   readonly items = this.watchlistService.items;
   checking = false;
+
+  /** Media-type filter for the list: all titles, movies only, or TV only. */
+  readonly filter = signal<'all' | 'movie' | 'tv'>('all');
+
+  /** Items matching the active media-type filter. */
+  readonly filteredItems = computed(() => {
+    const f = this.filter();
+    return f === 'all' ? this.items() : this.items().filter(i => i.mediaType === f);
+  });
+
+  readonly movieCount = computed(() => this.items().filter(i => i.mediaType === 'movie').length);
+  readonly tvCount = computed(() => this.items().filter(i => i.mediaType === 'tv').length);
 
   private imageBaseUrl = 'https://image.tmdb.org/t/p/';
   private posterSize = 'w500';

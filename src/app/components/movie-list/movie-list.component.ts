@@ -78,10 +78,14 @@ export class MovieListComponent implements OnInit {
     sessionStorage.setItem('searchState', JSON.stringify(state));
   }
 
-  onSearch(searchData: {query: string, contentType: string}): void {
+  onSearch(searchData: {query: string, contentType: string, scroll?: boolean}): void {
     if (!searchData.query.trim()) {
       return;
     }
+
+    // Toggling the content-type filter re-runs the search in place; don't yank
+    // the page down to the results in that case.
+    const scroll = searchData.scroll !== false;
 
     this.loading = true;
     this.searchPerformed = true;
@@ -114,12 +118,14 @@ export class MovieListComponent implements OnInit {
         if (this.movies.length > 0) {
           this.searchHistory.add(searchData.query, searchData.contentType);
 
-          setTimeout(() => {
-            const moviesSection = document.getElementById('movies-section');
-            if (moviesSection) {
-              moviesSection.scrollIntoView({ behavior: 'smooth' });
-            }
-          }, 200);
+          if (scroll) {
+            setTimeout(() => {
+              const moviesSection = document.getElementById('movies-section');
+              if (moviesSection) {
+                moviesSection.scrollIntoView({ behavior: 'smooth' });
+              }
+            }, 200);
+          }
         }
 
         if (this.movies.length === 0) {

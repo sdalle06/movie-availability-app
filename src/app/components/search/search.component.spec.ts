@@ -61,7 +61,7 @@ describe('SearchComponent', () => {
 
     component.onSearch();
 
-    expect(searchSpy).toHaveBeenCalledWith({query: searchQuery, contentType: 'multi'});
+    expect(searchSpy).toHaveBeenCalledWith({query: searchQuery, contentType: 'multi', scroll: true});
   });
 
   it('should emit with movie contentType when toggled', () => {
@@ -71,7 +71,22 @@ describe('SearchComponent', () => {
 
     component.onSearch();
 
-    expect(searchSpy).toHaveBeenCalledWith({query: 'test', contentType: 'movie'});
+    expect(searchSpy).toHaveBeenCalledWith({query: 'test', contentType: 'movie', scroll: true});
+  });
+
+  it('re-runs the search without scrolling when the content type is toggled', () => {
+    const searchSpy = spyOn(component.search, 'emit');
+    const scrollSpy = spyOn(document, 'getElementById');
+    component.searchControl.setValue('test');
+
+    component.contentTypeControl.setValue('tv');
+    jasmine.clock().install();
+    jasmine.clock().tick(200);
+    jasmine.clock().uninstall();
+
+    // Emits scroll:false so the parent list also skips its scroll-to-results.
+    expect(searchSpy).toHaveBeenCalledWith({ query: 'test', contentType: 'tv', scroll: false });
+    expect(scrollSpy).not.toHaveBeenCalled();
   });
 
   it('should not emit search event when onSearch is called with empty input', () => {

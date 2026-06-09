@@ -18,9 +18,35 @@
       <span>Checking availability…</span>
     </div>
 
-    <div *ngIf="items().length > 0; else emptyState" class="movies-grid">
+    <div *ngIf="items().length > 0" class="filter-bar">
+      <mat-button-toggle-group
+        [value]="filter()"
+        (change)="filter.set($event.value)"
+        class="content-toggle"
+        aria-label="Filter watchlist by media type">
+        <mat-button-toggle value="all">
+          <mat-icon>apps</mat-icon>
+          <span>All ({{ items().length }})</span>
+        </mat-button-toggle>
+        <mat-button-toggle value="movie">
+          <mat-icon>movie</mat-icon>
+          <span>Movies ({{ movieCount() }})</span>
+        </mat-button-toggle>
+        <mat-button-toggle value="tv">
+          <mat-icon>tv</mat-icon>
+          <span>TV ({{ tvCount() }})</span>
+        </mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+
+    <div *ngIf="items().length === 0; else hasItems">
+      <ng-container *ngTemplateOutlet="emptyState"></ng-container>
+    </div>
+
+    <ng-template #hasItems>
+      <div *ngIf="filteredItems().length > 0; else emptyFilter" class="movies-grid">
       <a
-        *ngFor="let item of items(); trackBy: trackById"
+        *ngFor="let item of filteredItems(); trackBy: trackById"
         class="watch-card"
         [class.now-available]="isAvailable(item)"
         [class.has-new]="hasNewOffers(item)"
@@ -64,7 +90,24 @@
           </ng-template>
         </div>
       </a>
-    </div>
+      </div>
+
+      <ng-template #emptyFilter>
+        <div class="empty-state slide-up">
+          <div class="empty-state-content">
+            <mat-icon class="empty-icon">{{ filter() === 'tv' ? 'tv' : 'movie' }}</mat-icon>
+            <h3 class="empty-title">No {{ filter() === 'tv' ? 'TV shows' : 'movies' }} in your watchlist</h3>
+            <p class="empty-text">
+              Switch the filter to see your other tracked titles, or add more from a detail page.
+            </p>
+            <button mat-stroked-button (click)="filter.set('all')">
+              <mat-icon>apps</mat-icon>
+              Show all
+            </button>
+          </div>
+        </div>
+      </ng-template>
+    </ng-template>
 
     <ng-template #emptyState>
       <div class="empty-state slide-up">

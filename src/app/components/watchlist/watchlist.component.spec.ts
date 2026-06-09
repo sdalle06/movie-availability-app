@@ -177,4 +177,62 @@ describe('WatchlistComponent', () => {
     expect(component.detailLink(makeItem({ id: 7, mediaType: 'movie' }))).toEqual(['/movies', '7']);
     expect(component.detailLink(makeItem({ id: 7, mediaType: 'tv' }))).toEqual(['/tv', '7']);
   });
+
+  it('shows all items by default with per-type counts in the toggle', async () => {
+    await setup([
+      makeItem({ id: 1, mediaType: 'movie' }),
+      makeItem({ id: 2, mediaType: 'tv' }),
+      makeItem({ id: 3, mediaType: 'tv' })
+    ]);
+    fixture.detectChanges();
+    expect(component.filter()).toBe('all');
+    expect(component.filteredItems().length).toBe(3);
+    expect(component.movieCount()).toBe(1);
+    expect(component.tvCount()).toBe(2);
+    const labels = fixture.debugElement.queryAll(By.css('.filter-bar mat-button-toggle'))
+      .map(t => t.nativeElement.textContent);
+    expect(labels[0]).toContain('All (3)');
+    expect(labels[1]).toContain('Movies (1)');
+    expect(labels[2]).toContain('TV (2)');
+  });
+
+  it('filters the grid to movies only', async () => {
+    await setup([
+      makeItem({ id: 1, mediaType: 'movie' }),
+      makeItem({ id: 2, mediaType: 'tv' })
+    ]);
+    fixture.detectChanges();
+    component.filter.set('movie');
+    fixture.detectChanges();
+    expect(component.filteredItems().map(i => i.id)).toEqual([1]);
+    expect(fixture.debugElement.queryAll(By.css('.watch-card')).length).toBe(1);
+  });
+
+  it('filters the grid to TV only', async () => {
+    await setup([
+      makeItem({ id: 1, mediaType: 'movie' }),
+      makeItem({ id: 2, mediaType: 'tv' })
+    ]);
+    fixture.detectChanges();
+    component.filter.set('tv');
+    fixture.detectChanges();
+    expect(component.filteredItems().map(i => i.id)).toEqual([2]);
+    expect(fixture.debugElement.queryAll(By.css('.watch-card')).length).toBe(1);
+  });
+
+  it('shows the empty-filter message (not the grid) when the active filter has no matches', async () => {
+    await setup([makeItem({ id: 1, mediaType: 'movie' })]);
+    fixture.detectChanges();
+    component.filter.set('tv');
+    fixture.detectChanges();
+    expect(fixture.debugElement.queryAll(By.css('.watch-card')).length).toBe(0);
+    const empty = fixture.debugElement.query(By.css('.empty-state'));
+    expect(empty.nativeElement.textContent).toContain('No TV shows in your watchlist');
+  });
+
+  it('hides the filter bar entirely when the watchlist is empty', async () => {
+    await setup([]);
+    fixture.detectChanges();
+    expect(fixture.debugElement.query(By.css('.filter-bar'))).toBeNull();
+  });
 });
